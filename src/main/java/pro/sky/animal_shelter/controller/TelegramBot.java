@@ -33,8 +33,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Autowired
     private StartService startService;
     // добавочное сообщение в конце
-    private final String backMsg = "Если хотите чтобы с Вами связались нажмите на ссылку или выберете пункт в меню /contact-information \n" +
-            "Если хотите связаться с волонтером нажмите на ссылку или выберете пункт в меню /to-call-a-volunteer";
+    private final String backMsg =  "Если хотите чтобы с Вами связались нажмите на ссылку или выберете пункт в меню /contact-information \n" +
+                                    "Если хотите связаться с волонтером нажмите на ссылку или выберете пункт в меню /to-call-a-volunteer";
     private final BotConfig config;
     public TelegramBot(BotConfig config){
         this.config = config;
@@ -90,7 +90,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 sendMessage(chatId, helloMsg.toString());
             }
             else if (message.equals("/info")) {
-                // формируем сообщение из aboutService и стандартного сообщения о связи
+                // формируем сообщение из infoService и стандартного сообщения о связи
                 helloMsg.append(infoService.info())
                         .append(backMsg);
                 // отправляем сообщение пользователю
@@ -148,21 +148,10 @@ public class TelegramBot extends TelegramLongPollingBot {
             else {
                 // должен обрабатывать метод сервиса
                 // при отправке сообщения выдавать кнопки с сообщением что сделать
-                sendMessage(chatId, "Что с этим сделать?");
-                InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-                List<InlineKeyboardButton> keyboardButtonsRow = new ArrayList<>();
-                keyboardButtonsRow.add(createButton("Отправить отчет","/pet-report"));
-                keyboardButtonsRow.add(createButton("Записать контактные данные","/contact-information-add"));
-                List<List<InlineKeyboardButton>> rowList = new ArrayList<>();
-                rowList.add(keyboardButtonsRow);
-                inlineKeyboardMarkup.setKeyboard(rowList);
-                SendMessage createButtons = new SendMessage();
-                createButtons.setChatId(chatId);
-                createButtons.setReplyMarkup(inlineKeyboardMarkup);
+                sendButtonToUser(chatId);
             }
         }
     }
-
     // метод для отправки сообщения ботом
     private void sendMessage(long chatId, String textToSend){
         SendMessage message = new SendMessage();
@@ -175,10 +164,33 @@ public class TelegramBot extends TelegramLongPollingBot {
             log.error("Error occurred: " + e.getMessage());
         }
     }
+    // создание всплывающей кнопки при отправке сообщения
     private InlineKeyboardButton createButton(String buttonText, String buttonCommand){
         InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
         inlineKeyboardButton.setText(buttonText);
         inlineKeyboardButton.setCallbackData(buttonCommand);
         return inlineKeyboardButton;
+    }
+    private void sendButtonToUser(long chatId){
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setText("Что с этим сделать?");
+        InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
+        // создаем ряды кнопок
+        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+        // список кнопок 1 ряда
+        List<InlineKeyboardButton> rowInLine = new ArrayList<>();
+        // добавляем кнопки в строку
+        rowInLine.add(createButton("Отправить отчет","pet_report"));
+        rowInLine.add(createButton("Записать контактные данные","contact_information_add"));
+        // добавляем кнопки в столбец
+        rowsInLine.add(rowInLine);
+        markupInLine.setKeyboard(rowsInLine);
+        message.setReplyMarkup(markupInLine);
+        try {
+            execute(message);
+        } catch (TelegramApiException e){
+            log.error("Error occurred: " + e.getMessage());
+        }
     }
 }
