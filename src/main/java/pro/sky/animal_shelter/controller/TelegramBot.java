@@ -67,7 +67,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         // формируем приветственное сообщение
         StringBuilder helloMsg = new StringBuilder();
         helloMsg.append("Привет ")
-                .append(update.getMessage().getChat().getFirstName());
+                .append(update.getMessage().getChat().getFirstName())
+                .append("\n");
         // проверяем есть ли отправленные сообщение
         if(update.hasMessage() && update.getMessage().hasText()){
             // получаем отправленное сообщение
