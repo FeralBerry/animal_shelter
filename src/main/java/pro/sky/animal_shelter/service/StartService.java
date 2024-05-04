@@ -14,7 +14,7 @@ public class StartService {
     private UserRepository userRepository;
     private final String MESSAGE =      "- Узнать информацию о приюте /about\n" +
                                         "- Как взять животное из приюта /info\n" +
-                                        "- Просмотреть форму отчета /pet-report-form\n" +
+                                        "- Просмотреть форму отчета /pet_report_form\n" +
                                         "- Позвать волонтера /to_call_a_volunteer\n" +
                                         "- Если надо отправить отчет то просто ответьте боту";
     public String start(Message message){

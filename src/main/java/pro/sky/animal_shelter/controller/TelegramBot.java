@@ -37,8 +37,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Autowired
     private CreateButtonService createButtonService;
     // добавочное сообщение в конце
-    private final String backMsg =  "Если хотите чтобы с Вами связались нажмите на ссылку или выберете пункт в меню /contact-information \n" +
-                                    "Если хотите связаться с волонтером нажмите на ссылку или выберете пункт в меню /to-call-a-volunteer";
+    private final String backMsg =  "Если хотите чтобы с Вами связались нажмите на ссылку или выберете пункт в меню /contact_information \n" +
+                                    "Если хотите связаться с волонтером нажмите на ссылку или выберете пункт в меню /to_call_a_volunteer";
     private final BotConfig config;
     public TelegramBot(BotConfig config){
         this.config = config;
@@ -48,9 +48,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         botCommandList.add(new BotCommand("/start","get welcome message"));
         botCommandList.add(new BotCommand("/about","find out information about the nursery"));
         botCommandList.add(new BotCommand("/info","information about animals and rules"));
-        botCommandList.add(new BotCommand("/pet-report-form","animal report form"));
-        botCommandList.add(new BotCommand("/to-call-a-volunteer","call a volunteer"));
-        botCommandList.add(new BotCommand("/contact-information","feedback"));
+        botCommandList.add(new BotCommand("/pet_report_form","animal report form"));
+        botCommandList.add(new BotCommand("/to_call_a_volunteer","call a volunteer"));
+        botCommandList.add(new BotCommand("/contact_information","feedback"));
         // создаем кнопку с меню и обрабатываем ошибку
         try{
             this.execute(new SetMyCommands(botCommandList, new BotCommandScopeDefault(), null));
@@ -100,13 +100,13 @@ public class TelegramBot extends TelegramLongPollingBot {
                 // отправляем сообщение пользователю
                 sendMessage(chatId, helloMsg.toString());
             }
-            else if (message.equals("/pet-list")) {
+            else if (message.equals("/pet_list")) {
                 // должен обрабатывать метод сервиса
                 // выводит список животных из БД
                 String pet_list = "";
                 sendMessage(chatId, pet_list);
             }
-            else if (message.equals("/to-call-a-volunteer")) {
+            else if (message.equals("/to_call_a_volunteer")) {
                 // должен обрабатывать метод сервиса
                 // Вызов волонтера осуществляется одним из следующих способов (на выбор разработчика):
                 //- по номеру телефона;
@@ -115,13 +115,13 @@ public class TelegramBot extends TelegramLongPollingBot {
                 String to_call_a_volunteer = "";
                 sendMessage(chatId, to_call_a_volunteer);
             }
-            else if (message.equals("/contact-information")) {
+            else if (message.equals("/contact_information")) {
                 // должен обрабатывать метод сервиса
                 // Выдавать сообщение с типом как написать данные +7-9**-***-**-** ФИО.
                 String contact_information = "";
                 sendMessage(chatId,contact_information);
             }
-            else if (message.equals("/contact-information-add")) {
+            else if (message.equals("/contact_information_add")) {
                 // должен обрабатывать метод сервиса
                 // записать информацию для контакта /contact-information-add
                 // проверять правильность по патерну +7-9**-***-**-** ФИО. Если правильно записывать в БД возвращать сообщение
@@ -130,7 +130,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 String contact_information = "";
                 sendMessage(chatId,contact_information);
             }
-            else if (message.equals("/pet-report-form")) {
+            else if (message.equals("/pet_report_form")) {
                 // должен обрабатывать метод сервиса
                 // присылает форму отчета
                 String pet_report_form = "";
@@ -153,7 +153,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             if(callBackData.equals("pet_report")){
                 String newMessage = "pet_report";// поменять на метод в сервисе
                 editMessage(chatId, messageId, newMessage);
-            } else if (callBackData.equals("contact-information-add")) {
+            } else if (callBackData.equals("contact_information_add")) {
                 String newMessage = "contact_information_add";// поменять на метод в сервисе
                 editMessage(chatId, messageId, newMessage);
             } else if (callBackData.equals("pet_list_add")) {
