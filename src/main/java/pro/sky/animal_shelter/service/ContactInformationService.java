@@ -10,4 +10,8 @@ import pro.sky.animal_shelter.model.ContactInformationRepository;
 public class ContactInformationService {
     @Autowired
     private ContactInformationRepository contactInformationRepository;
+    public String addContactInformation(long chatId){
+        String msg = "";
+        return msg;
+    }
 }
