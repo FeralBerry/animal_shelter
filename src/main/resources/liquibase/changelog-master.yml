@@ -2,7 +2,7 @@ databaseChangeLog:
   - changeSet:
       changes:
         - createTable:
-          tableName: notification_task
+          tableName: pets
           columns:
             - column:
                 name: id
@@ -11,18 +11,23 @@ databaseChangeLog:
                   primaryKey: true
                   nullable: false
             - column:
-                name: chatId
-                type: long
+                name: petName
+                type: varchar(20)
                 constraints:
                   nullable: false
             - column:
-                name: chatText
+                name: filePath
                 type: text
                 constraints:
                   nullable: false
             - column:
-                name: send_at
-                type: timestamp
+                name: fileSize
+                type: long
+                constraints:
+                  nullable: false
+            - column:
+                name: mediaType
+                type: varchar(10)
                 constraints:
                   nullable: false
         - createTable:
@@ -50,7 +55,90 @@ databaseChangeLog:
                 constraints:
                   nullable: false
             - column:
-                name: registeredAt
-                type: timestamp
+                name: role
+                type: varchar(20)
                 constraints:
+                  nullable: true
+        - createTable:
+          tableName: about
+          columns:
+            - column:
+                name: id
+                type: long
+                constraints:
+                  primaryKey: true
                   nullable: false
+            - column:
+                name: shelterName
+                type: varchar(100)
+                constraints:
+                  nullable: true
+            - column:
+                name: schedule
+                type: text
+                constraints:
+                  nullable: true
+            - column:
+                name: securityContacts
+                type: text
+                constraints:
+                  nullable: true
+            - column:
+                name: safetyPrecautions
+                type: text
+                constraints:
+                  nullable: true
+        - createTable:
+          tableName: info
+          columns:
+            - column:
+                name: id
+                type: long
+                constraints:
+                  primaryKey: true
+                  nullable: false
+            - column:
+                name: rules
+                type: text
+                constraints:
+                  nullable: true
+            - column:
+                name: documents
+                type: text
+                constraints:
+                  nullable: true
+            - column:
+                name: transportation
+                type: text
+                constraints:
+                  nullable: true
+            - column:
+                name: houseForAPuppy
+                type: text
+                constraints:
+                  nullable: true
+            - column:
+                name: homeForAnAdultAnimal
+                type: text
+                constraints:
+                  nullable: true
+            - column:
+                name: homeForAnAnimalWithDisabilities
+                type: text
+                constraints:
+                  nullable: true
+            - column:
+                name: tipsFromADogHandler
+                type: text
+                constraints:
+                  nullable: true
+            - column:
+                name: recommendationsOfADogHandler
+                type: text
+                constraints:
+                  nullable: true
+            - column:
+                name: reasonsForRefusal
+                type: text
+                constraints:
+                  nullable: true
