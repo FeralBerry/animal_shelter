@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pro.sky.animal_shelter.model.ContactInformationRepository;
 
-
 @Slf4j
 @Service
 public class ContactInformationService {
