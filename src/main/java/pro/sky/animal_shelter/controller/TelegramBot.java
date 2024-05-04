@@ -3,8 +3,8 @@ package pro.sky.animal_shelter.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import pro.sky.animal_shelter.configuration.BotConfig;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
@@ -32,6 +32,10 @@ public class TelegramBot extends TelegramLongPollingBot {
     private ReportService reportService;
     @Autowired
     private StartService startService;
+    @Autowired
+    private AdminService adminService;
+    @Autowired
+    private CreateButtonService createButtonService;
     // добавочное сообщение в конце
     private final String backMsg =  "Если хотите чтобы с Вами связались нажмите на ссылку или выберете пункт в меню /contact-information \n" +
                                     "Если хотите связаться с волонтером нажмите на ссылку или выберете пункт в меню /to-call-a-volunteer";
@@ -66,12 +70,12 @@ public class TelegramBot extends TelegramLongPollingBot {
     public void onUpdateReceived(org.telegram.telegrambots.meta.api.objects.Update update) {
         // формируем приветственное сообщение
         StringBuilder helloMsg = new StringBuilder();
-        helloMsg.append("Привет ")
-                .append(update.getMessage().getChat().getFirstName())
-                .append("\n");
         // проверяем есть ли отправленные сообщение
         if(update.hasMessage() && update.getMessage().hasText()){
             // получаем отправленное сообщение
+            helloMsg.append("Привет ")
+                    .append(update.getMessage().getChat().getFirstName())
+                    .append("\n");
             String message = update.getMessage().getText();
             // получаем id чата
             long chatId = update.getMessage().getChatId();
@@ -101,12 +105,6 @@ public class TelegramBot extends TelegramLongPollingBot {
                 // выводит список животных из БД
                 String pet_list = "";
                 sendMessage(chatId, pet_list);
-            }
-            else if (message.equals("/pet-list-add")) {
-                // должен обрабатывать метод сервиса
-                // добавлять список животных, проверять есть ли на это права
-                String pet_list_add = "";
-                sendMessage(chatId, pet_list_add);
             }
             else if (message.equals("/to-call-a-volunteer")) {
                 // должен обрабатывать метод сервиса
@@ -138,17 +136,29 @@ public class TelegramBot extends TelegramLongPollingBot {
                 String pet_report_form = "";
                 sendMessage(chatId, pet_report_form);
             }
-            else if (message.equals("/pet-report")) {
-                // должен обрабатывать метод сервиса
-                // отправить отчет /pet-report
-                // проверять содержит ли изображение и содержит ли текст, если все есть, то сохранять в БД
-                String pet_report_form = "";
-                sendMessage(chatId, pet_report_form);
-            }
             else {
-                // должен обрабатывать метод сервиса
-                // при отправке сообщения выдавать кнопки с сообщением что сделать
-                sendButtonToUser(chatId);
+                if (message.equals(getBotToken())){
+                    adminService.setRole(update.getMessage());
+                    sendMessage(chatId, "Поздравляем вы стали админом");
+                } else if(adminService.checkAdmin(chatId)){
+                    sendButton(chatId,"admin");
+                } else {
+                    sendButton(chatId,"user");
+                }
+            }
+        }  else if (update.hasCallbackQuery()) {
+            int messageId = update.getCallbackQuery().getMessage().getMessageId();
+            long chatId = update.getCallbackQuery().getMessage().getChatId();
+            String callBackData = update.getCallbackQuery().getData();
+            if(callBackData.equals("pet_report")){
+                String newMessage = "pet_report";// поменять на метод в сервисе
+                editMessage(chatId, messageId, newMessage);
+            } else if (callBackData.equals("contact-information-add")) {
+                String newMessage = "contact_information_add";// поменять на метод в сервисе
+                editMessage(chatId, messageId, newMessage);
+            } else if (callBackData.equals("pet_list_add")) {
+                String newMessage = "pet_list_add";// поменять на метод в сервисе
+                editMessage(chatId, messageId, newMessage);
             }
         }
     }
@@ -165,27 +175,28 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
     // создание всплывающей кнопки при отправке сообщения
-    private InlineKeyboardButton createButton(String buttonText, String buttonCommand){
-        InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
-        inlineKeyboardButton.setText(buttonText);
-        inlineKeyboardButton.setCallbackData(buttonCommand);
-        return inlineKeyboardButton;
+    private void editMessage(long chatId, int messageId, String newMessage){
+        EditMessageText message = new EditMessageText();
+        message.setChatId(chatId);
+        message.setMessageId(messageId);
+        message.setText(newMessage);
+        try {
+            execute(message);
+        } catch (TelegramApiException e){
+            log.error("Error occurred: " + e.getMessage());
+        }
     }
-    private void sendButtonToUser(long chatId){
+    private void sendButton(long chatId,String role){
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText("Что с этим сделать?");
         InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
-        // создаем ряды кнопок
-        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
-        // список кнопок 1 ряда
-        List<InlineKeyboardButton> rowInLine = new ArrayList<>();
-        // добавляем кнопки в строку
-        rowInLine.add(createButton("Отправить отчет","pet_report"));
-        rowInLine.add(createButton("Записать контактные данные","contact_information_add"));
-        // добавляем кнопки в столбец
-        rowsInLine.add(rowInLine);
-        markupInLine.setKeyboard(rowsInLine);
+        if (role.equals("user")){
+            markupInLine.setKeyboard(createButtonService.createButtonToUser());
+        }
+        if (role.equals("admin")){
+            markupInLine.setKeyboard(createButtonService.createButtonToAdmin());
+        }
         message.setReplyMarkup(markupInLine);
         try {
             execute(message);
