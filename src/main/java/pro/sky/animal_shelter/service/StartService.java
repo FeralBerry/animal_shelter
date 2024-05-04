@@ -18,7 +18,7 @@ public class StartService {
                                         "- Позвать волонтера /to_call_a_volunteer\n" +
                                         "- Если надо отправить отчет то просто ответьте боту";
     public String start(Message message){
-        // Проверяем был ли раньше этот пользователь зарегистрирован в боте
+        // сохраняем или изменяем данные пользователя и сохраняем их в БД
         User user = new User();
         user.setChatId(message.getChatId());
         user.setFirstName(message.getChat().getFirstName());
