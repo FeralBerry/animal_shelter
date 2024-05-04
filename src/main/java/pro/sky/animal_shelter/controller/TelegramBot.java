@@ -146,16 +146,17 @@ public class TelegramBot extends TelegramLongPollingBot {
                         // при отправке токена бота пользователь становится администратором
                         adminService.setRole(update.getMessage());
                         sendMessage(chatId, "Поздравляем вы стали админом");
+                        sendButton(chatId, adminService.checkAdmin(chatId));
                     } else if (adminService.checkAdmin(chatId)) {
                         // отслеживание статуса пользователя
                         switch (userStatusService.getUserStatus(chatId)) {
                             // создание списка кнопок всплывающих администратору при отправке сообщения
-                            case "" -> sendButton(chatId, adminService.checkAdmin(chatId));
+                            case "null" -> sendButton(chatId, adminService.checkAdmin(chatId));
                             // действия бота если пользователь в статусе просмотра контактной информации
                             case "view_contact_information" -> {
                                 // выход в главное меню
                                 if (message.equals("exit")) {
-                                    userStatusService.changeUserStatus(chatId, "");
+                                    userStatusService.changeUserStatus(chatId, "null");
                                     sendButton(chatId, adminService.checkAdmin(chatId));
                                 } else {
                                     // проверка введенных данных пользователя
@@ -183,12 +184,22 @@ public class TelegramBot extends TelegramLongPollingBot {
                         editMessage(chatId, messageId, newMessage);
                     }
                     case "view_contact_information" -> {
+                        log.info("view_contact_information");
                         // получение списка обратной связи
-                        String newMessage = contactInformationService.getAllContactInformation() +
-                                "\nДля удаления обратной связи введите ее id, для перехода ко всем командам exit";
-                        // изменение статуса пользователя
-                        userStatusService.changeUserStatus(chatId,"view_contact_information");
-                        editMessage(chatId, messageId, newMessage);
+                        StringBuilder newMessage = new StringBuilder();
+                        if(contactInformationService.getAllContactInformation().equals("[]")){
+                            newMessage.append("Пока никто не оставлял заявок на обратную связь.");
+                            // изменение статуса пользователя
+                            userStatusService.changeUserStatus(chatId,"null");
+                            sendButton(chatId, adminService.checkAdmin(chatId));
+                        } else {
+                            newMessage.append(contactInformationService.getAllContactInformation())
+                                    .append("\n")
+                                    .append("Для удаления обратной связи введите ее id, для перехода ко всем командам exit");
+                            // изменение статуса пользователя
+                            userStatusService.changeUserStatus(chatId,"view_contact_information");
+                        }
+                        editMessage(chatId, messageId, newMessage.toString());
                     }
                 }
             } else {

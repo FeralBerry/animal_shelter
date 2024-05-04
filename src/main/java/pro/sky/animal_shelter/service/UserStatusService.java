@@ -17,6 +17,7 @@ public class UserStatusService {
         userRepository.findById(chatId)
                 .ifPresent(i -> {
                     user.setRole(i.getRole());
+                    user.setChatId(chatId);
                     user.setFirstName(i.getFirstName());
                     user.setLastName(i.getLastName());
                     user.setUserName(i.getUserName());

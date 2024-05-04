@@ -1,6 +1,8 @@
 package pro.sky.animal_shelter.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 import java.util.Objects;
@@ -8,6 +10,7 @@ import java.util.Objects;
 @Entity(name = "about")
 public class About {
     @Id
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
     private String shelterName;
     private String schedule;
