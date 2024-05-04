@@ -17,7 +17,7 @@ public class CreateButtonService {
         List<InlineKeyboardButton> rowInLine = new ArrayList<>();
         // добавляем кнопки в строку
         rowInLine.add(createButton("Добавить питомца","pet_list_add"));
-        rowInLine.add(createButton("Записать контактные данные","contact-information-add"));
+        rowInLine.add(createButton("Просмотреть обратную связь","view_contact_information"));
         // добавляем кнопки в столбец
         rowsInLine.add(rowInLine);
         return rowsInLine;
@@ -29,7 +29,7 @@ public class CreateButtonService {
         List<InlineKeyboardButton> rowInLine = new ArrayList<>();
         // добавляем кнопки в строку
         rowInLine.add(createButton("Отправить отчет","pet_report"));
-        rowInLine.add(createButton("Записать контактные данные","contact-information-add"));
+        rowInLine.add(createButton("Записать контактные данные","contact_information_add"));
         // добавляем кнопки в столбец
         rowsInLine.add(rowInLine);
         return rowsInLine;

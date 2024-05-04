@@ -35,7 +35,11 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Autowired
     private AdminService adminService;
     @Autowired
+    private ContactInformationService contactInformationService;
+    @Autowired
     private CreateButtonService createButtonService;
+    @Autowired
+    private UserStatusService userStatusService;
     // добавочное сообщение в конце
     private final String backMsg =  "Если хотите чтобы с Вами связались нажмите на ссылку или выберете пункт в меню /contact_information \n" +
                                     "Если хотите связаться с волонтером нажмите на ссылку или выберете пункт в меню /to_call_a_volunteer";
@@ -80,85 +84,125 @@ public class TelegramBot extends TelegramLongPollingBot {
             // получаем id чата
             long chatId = update.getMessage().getChatId();
             // сверяем полученное сообщение и выполняем команду
-            if(message.equals("/start")){
-                // формируем сообщение из startService
-                helloMsg.append(startService.start(update.getMessage()));
-                // отправляем сообщение пользователю
-                sendMessage(chatId, helloMsg.toString());
-            }
-            else if (message.equals("/about")) {
-                // формируем сообщение из aboutService и стандартного сообщения о связи
-                helloMsg.append(aboutService.about())
-                        .append(backMsg);
-                // отправляем сообщение пользователю
-                sendMessage(chatId, helloMsg.toString());
-            }
-            else if (message.equals("/info")) {
-                // формируем сообщение из infoService и стандартного сообщения о связи
-                helloMsg.append(infoService.info())
-                        .append(backMsg);
-                // отправляем сообщение пользователю
-                sendMessage(chatId, helloMsg.toString());
-            }
-            else if (message.equals("/pet_list")) {
-                // должен обрабатывать метод сервиса
-                // выводит список животных из БД
-                String pet_list = "";
-                sendMessage(chatId, pet_list);
-            }
-            else if (message.equals("/to_call_a_volunteer")) {
-                // должен обрабатывать метод сервиса
-                // Вызов волонтера осуществляется одним из следующих способов (на выбор разработчика):
-                //- по номеру телефона;
-                //- по никнейму в Телеграме;
-                //- прямо в боте, то есть волонтер регистрируется в том же боте как администратор, а сообщения от пользователя перенаправляются в боте к волонтеру.
-                String to_call_a_volunteer = "";
-                sendMessage(chatId, to_call_a_volunteer);
-            }
-            else if (message.equals("/contact_information")) {
-                // должен обрабатывать метод сервиса
-                // Выдавать сообщение с типом как написать данные +7-9**-***-**-** ФИО.
-                String contact_information = "";
-                sendMessage(chatId,contact_information);
-            }
-            else if (message.equals("/contact_information_add")) {
-                // должен обрабатывать метод сервиса
-                // записать информацию для контакта /contact-information-add
-                // проверять правильность по патерну +7-9**-***-**-** ФИО. Если правильно записывать в БД возвращать сообщение
-                // пользователю, что в ближайшее время с ним свяжутся.
-                // отправлять уведомление волонтеру
-                String contact_information = "";
-                sendMessage(chatId,contact_information);
-            }
-            else if (message.equals("/pet_report_form")) {
-                // должен обрабатывать метод сервиса
-                // присылает форму отчета
-                String pet_report_form = "";
-                sendMessage(chatId, pet_report_form);
-            }
-            else {
-                if (message.equals(getBotToken())){
-                    adminService.setRole(update.getMessage());
-                    sendMessage(chatId, "Поздравляем вы стали админом");
-                } else if(adminService.checkAdmin(chatId)){
-                    sendButton(chatId,"admin");
-                } else {
-                    sendButton(chatId,"user");
+            switch (message) {
+                case "/start" -> {
+                    // формируем сообщение из startService
+                    helloMsg.append(startService.start(update.getMessage()));
+                    // отправляем сообщение пользователю
+                    sendMessage(chatId, helloMsg.toString());
+                }
+                case "/about" -> {
+                    // формируем сообщение из aboutService и стандартного сообщения о связи
+                    helloMsg.append(aboutService.about())
+                            .append(backMsg);
+                    // отправляем сообщение пользователю
+                    sendMessage(chatId, helloMsg.toString());
+                }
+                case "/info" -> {
+                    // формируем сообщение из infoService и стандартного сообщения о связи
+                    helloMsg.append(infoService.info())
+                            .append(backMsg);
+                    // отправляем сообщение пользователю
+                    sendMessage(chatId, helloMsg.toString());
+                }
+                case "/pet_list" -> {
+                    // должен обрабатывать метод сервиса
+                    // выводит список животных из БД
+                    String pet_list = "";
+                    sendMessage(chatId, pet_list);
+                }
+                case "/to_call_a_volunteer" -> {
+                    // должен обрабатывать метод сервиса
+                    // Вызов волонтера осуществляется одним из следующих способов (на выбор разработчика):
+                    //- по номеру телефона;
+                    //- по никнейму в Телеграме;
+                    //- прямо в боте, то есть волонтер регистрируется в том же боте как администратор, а сообщения от пользователя перенаправляются в боте к волонтеру.
+                    String to_call_a_volunteer = "";
+                    sendMessage(chatId, to_call_a_volunteer);
+                }
+                case "/contact_information" -> {
+                    // должен обрабатывать метод сервиса
+                    // Выдавать сообщение с типом как написать данные +7-9**-***-**-** ФИО.
+                    String contact_information = "";
+                    sendMessage(chatId, contact_information);
+                }
+                case "/contact_information_add" -> {
+                    // должен обрабатывать метод сервиса
+                    // записать информацию для контакта /contact-information-add
+                    // проверять правильность по патерну +7-9**-***-**-** ФИО. Если правильно записывать в БД возвращать сообщение
+                    // пользователю, что в ближайшее время с ним свяжутся.
+                    // отправлять уведомление волонтеру
+                    String contact_information = "";
+                    sendMessage(chatId, contact_information);
+                }
+                case "/pet_report_form" -> {
+                    // должен обрабатывать метод сервиса
+                    // присылает форму отчета
+                    String pet_report_form = "";
+                    sendMessage(chatId, pet_report_form);
+                }
+                default -> {
+                    if (message.equals(getBotToken())) {
+                        // при отправке токена бота пользователь становится администратором
+                        adminService.setRole(update.getMessage());
+                        sendMessage(chatId, "Поздравляем вы стали админом");
+                    } else if (adminService.checkAdmin(chatId)) {
+                        // отслеживание статуса пользователя
+                        switch (userStatusService.getUserStatus(chatId)) {
+                            // создание списка кнопок всплывающих администратору при отправке сообщения
+                            case "" -> sendButton(chatId, adminService.checkAdmin(chatId));
+                            // действия бота если пользователь в статусе просмотра контактной информации
+                            case "view_contact_information" -> {
+                                // выход в главное меню
+                                if (message.equals("exit")) {
+                                    userStatusService.changeUserStatus(chatId, "");
+                                    sendButton(chatId, adminService.checkAdmin(chatId));
+                                } else {
+                                    // проверка введенных данных пользователя
+                                    if (isNumeric(message)) {
+                                        sendMessage(chatId, contactInformationService.deleteContactInformationById(Long.parseLong(message)) + "\nДля удаления обратной связи введите ее id, для перехода ко всем командам exit");
+                                    } else {
+                                        sendMessage(chatId, "Ввели не id, введите id обратной связи или exit для перехода ко всем командам");
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        sendButton(chatId, adminService.checkAdmin(chatId));
+                    }
                 }
             }
         }  else if (update.hasCallbackQuery()) {
             int messageId = update.getCallbackQuery().getMessage().getMessageId();
             long chatId = update.getCallbackQuery().getMessage().getChatId();
             String callBackData = update.getCallbackQuery().getData();
-            if(callBackData.equals("pet_report")){
-                String newMessage = "pet_report";// поменять на метод в сервисе
-                editMessage(chatId, messageId, newMessage);
-            } else if (callBackData.equals("contact_information_add")) {
-                String newMessage = "contact_information_add";// поменять на метод в сервисе
-                editMessage(chatId, messageId, newMessage);
-            } else if (callBackData.equals("pet_list_add")) {
-                String newMessage = "pet_list_add";// поменять на метод в сервисе
-                editMessage(chatId, messageId, newMessage);
+            if(adminService.checkAdmin(chatId)){
+                switch (callBackData) {
+                    case "pet_list_add" -> {
+                        String newMessage = "pet_list_add";// поменять на метод в сервисе
+                        editMessage(chatId, messageId, newMessage);
+                    }
+                    case "view_contact_information" -> {
+                        // получение списка обратной связи
+                        String newMessage = contactInformationService.getAllContactInformation() +
+                                "\nДля удаления обратной связи введите ее id, для перехода ко всем командам exit";
+                        // изменение статуса пользователя
+                        userStatusService.changeUserStatus(chatId,"view_contact_information");
+                        editMessage(chatId, messageId, newMessage);
+                    }
+                }
+            } else {
+                switch (callBackData) {
+                    case "pet_report" -> {
+                        String newMessage = "pet_report";// поменять на метод в сервисе
+                        userStatusService.changeUserStatus(chatId,"pet_report");
+                        editMessage(chatId, messageId, newMessage);
+                    }
+                    case "contact_information_add" -> {
+                        String newMessage = "contact_information_add";// поменять на метод в сервисе
+                        editMessage(chatId, messageId, newMessage);
+                    }
+                }
             }
         }
     }
@@ -186,22 +230,31 @@ public class TelegramBot extends TelegramLongPollingBot {
             log.error("Error occurred: " + e.getMessage());
         }
     }
-    private void sendButton(long chatId,String role){
+    private void sendButton(long chatId, boolean role){
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setText("Что с этим сделать?");
+        message.setText("Что делаем дальше?");
         InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
-        if (role.equals("user")){
+        // проверка роли пользователя
+        if (role){
+           markupInLine.setKeyboard(createButtonService.createButtonToAdmin());
+        } else {
             markupInLine.setKeyboard(createButtonService.createButtonToUser());
-        }
-        if (role.equals("admin")){
-            markupInLine.setKeyboard(createButtonService.createButtonToAdmin());
         }
         message.setReplyMarkup(markupInLine);
         try {
             execute(message);
         } catch (TelegramApiException e){
             log.error("Error occurred: " + e.getMessage());
+        }
+    }
+    // проверка является ли строка Long или нет
+    public static boolean isNumeric(String str) {
+        try {
+            Long.parseLong(str);
+            return true;
+        } catch(NumberFormatException e){
+            return false;
         }
     }
 }
