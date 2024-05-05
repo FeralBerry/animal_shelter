@@ -1,8 +1,6 @@
 package pro.sky.animal_shelter.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
+import jakarta.persistence.*;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -10,6 +8,7 @@ import java.util.Objects;
 @Entity(name = "pets")
 public class Pet {
     @Id
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
     private String petName;
     private String filePath;

@@ -8,18 +8,32 @@ import pro.sky.animal_shelter.model.PetRepository;
 @Slf4j
 @Service
 public class PetService {
-    @Autowired
     private PetRepository petRepository;
+    public PetService(PetRepository petRepository){
+        this.petRepository = petRepository;
+    }
+    public String getPetForm(){
+        return "";
+    }
     // получать информацию из БД всех животных
     public String getPets(){
+
         return "";
     }
     // получить информацию по определенному животному
-    public String getPet(){
+    public String getPet(long petId, long chatId){
         return "";
     }
     // проверять роль пользователя и добавлять животного в БД
-    public String addPet(){
-        return "";
+    public void addPet(){
+
+    }
+    // проверять роль пользователя и изменяем животного в БД
+    public void editPet(){
+
+    }
+    // проверять роль пользователя и удаляем животного из БД
+    public void deletePet(){
+
     }
 }

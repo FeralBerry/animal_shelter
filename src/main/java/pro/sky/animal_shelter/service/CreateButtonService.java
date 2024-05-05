@@ -3,6 +3,9 @@ package pro.sky.animal_shelter.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import pro.sky.animal_shelter.enums.AdminButtonToMainMenuEnum;
+import pro.sky.animal_shelter.enums.UserButtonEnum;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,28 +13,32 @@ import java.util.List;
 @Slf4j
 @Service
 public class CreateButtonService {
-    public List<List<InlineKeyboardButton>> createButtonToAdmin(){
+    private final int COUNT_BUTTON_USER_ON_SCREEN = 2;
+    private final int COUNT_BUTTON_ADMIN_ON_SCREEN = 2;
+    public List createButtonToMainMenuAdmin(){
         // создаем ряды кнопок
-        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+        List<Object> rowsInLine;
         // список кнопок 1 ряда
         List<InlineKeyboardButton> rowInLine = new ArrayList<>();
-        // добавляем кнопки в строку
-        rowInLine.add(createButton("Добавить питомца","pet_list_add"));
-        rowInLine.add(createButton("Записать контактные данные","contact-information-add"));
-        // добавляем кнопки в столбец
-        rowsInLine.add(rowInLine);
+        // обходим массив enum кнопок для стартового меню админа
+        for (AdminButtonToMainMenuEnum adminButtonToMainMenuEnum : AdminButtonToMainMenuEnum.values()){
+            rowInLine.add(createButton(adminButtonToMainMenuEnum.getText(),adminButtonToMainMenuEnum.getCommand()));
+        }
+        // разделяем кнопки на строки
+        rowsInLine = List.of(partition(rowInLine, COUNT_BUTTON_ADMIN_ON_SCREEN));
         return rowsInLine;
     }
-    public List<List<InlineKeyboardButton>> createButtonToUser(){
+    public List createButtonToUser(){
         // создаем ряды кнопок
-        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+        List<Object> rowsInLine;
         // список кнопок 1 ряда
         List<InlineKeyboardButton> rowInLine = new ArrayList<>();
         // добавляем кнопки в строку
-        rowInLine.add(createButton("Отправить отчет","pet_report"));
-        rowInLine.add(createButton("Записать контактные данные","contact-information-add"));
+        for (UserButtonEnum userButtonEnum : UserButtonEnum.values()){
+            rowInLine.add(createButton(userButtonEnum.getText(),userButtonEnum.getCommand()));
+        }
         // добавляем кнопки в столбец
-        rowsInLine.add(rowInLine);
+        rowsInLine = List.of(partition(rowInLine, COUNT_BUTTON_USER_ON_SCREEN));
         return rowsInLine;
     }
     private InlineKeyboardButton createButton(String buttonText, String buttonCommand){
@@ -39,5 +46,26 @@ public class CreateButtonService {
         inlineKeyboardButton.setText(buttonText);
         inlineKeyboardButton.setCallbackData(buttonCommand);
         return inlineKeyboardButton;
+    }
+    // метод для разбиения листа на подлисты
+    public static<T> List[] partition(List<T> list, int n)
+    {
+        int size = list.size();
+        int m = size / n;
+        if (size % n != 0) {
+            m++;
+        }
+        ArrayList[] partition = new ArrayList[m];
+        for (int i = 0; i < m; i++)
+        {
+            int fromIndex = i*n;
+            int toIndex = Math.min(i * n + n, size);
+
+            partition[i] = new ArrayList<>(list.subList(fromIndex, toIndex));
+        }
+        return partition;
+    }
+    public List createPaginationButton(){
+        return null;
     }
 }
