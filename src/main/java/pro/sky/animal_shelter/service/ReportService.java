@@ -10,4 +10,5 @@ import pro.sky.animal_shelter.model.ReportRepository;
 public class ReportService {
     @Autowired
     private ReportRepository reportRepository;
+    public void sendReportForm(long chatId, )
 }
