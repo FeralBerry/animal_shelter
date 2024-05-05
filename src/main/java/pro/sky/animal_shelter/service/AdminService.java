@@ -39,8 +39,4 @@ public class AdminService {
         userRepository.save(user);
         log.info("user saved: " + user);
     }
-    public void viewContactInfo() {
-
-    }
-
 }

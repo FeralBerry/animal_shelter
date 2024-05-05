@@ -8,8 +8,14 @@ import pro.sky.animal_shelter.model.ContactInformationRepository;
 @Slf4j
 @Service
 public class ContactInformationService {
-    @Autowired
-    private ContactInformationRepository contactInformationRepository;
+    private final ContactInformationRepository contactInformationRepository;
+    public ContactInformationService(ContactInformationRepository contactInformationRepository){
+        this.contactInformationRepository = contactInformationRepository;
+    }
+    public String getContactInformation(){
+        // Выдавать сообщение с типом как написать данные +7-9**-***-**-** ФИО.
+        return "";
+    }
     public String addContactInformation(){
         // сохраняем в базу данных и возвращаем строку
         return "";

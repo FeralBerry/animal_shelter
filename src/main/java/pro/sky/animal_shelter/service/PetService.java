@@ -8,10 +8,16 @@ import pro.sky.animal_shelter.model.PetRepository;
 @Slf4j
 @Service
 public class PetService {
-    @Autowired
     private PetRepository petRepository;
+    public PetService(PetRepository petRepository){
+        this.petRepository = petRepository;
+    }
+    public String getPetForm(){
+        return "";
+    }
     // получать информацию из БД всех животных
-    public String getPets(long chatId){
+    public String getPets(){
+
         return "";
     }
     // получить информацию по определенному животному
