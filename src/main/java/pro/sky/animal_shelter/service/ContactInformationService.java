@@ -19,16 +19,16 @@ public class ContactInformationService {
         // Выдавать сообщение с типом как написать данные +7-9**-***-**-** ФИО.
         return MESSAGE;
     }
-    public String addContactInformation(){
-        // сохраняем в базу данных и возвращаем строку
-        return "";
+    public boolean addContactInformation(String message){
+        // парсим сообщение, сохраняем в базу данных и возвращаем true, если не правильно прислано сообщение, то присылаем false
+        return false;
     }
     public List<ContactInformation> getAllContactInformation(){
         return contactInformationRepository.findAll();
     }
     public String deleteContactInformationById(long id){
         if (contactInformationRepository.findById(id).isPresent()){
-            contactInformationRepository.deleteByIdContactInformation(id);
+            contactInformationRepository.deleteById(id);
             return "Обратная связь под id: " + id + " успешно удалена";
         } else {
             return "Обратная связь под id не найдена";
