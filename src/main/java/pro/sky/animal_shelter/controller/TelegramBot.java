@@ -174,11 +174,32 @@ public class TelegramBot extends TelegramLongPollingBot {
                 } else {
                     // отслеживание статуса пользователя и реагируем на текстовое сообщение
                     if(userStatusService.getUserStatus(chatId).equals(NO_STATUS.getStatus())){
-                        // реакция на текстовое сообщение боту если пользователь в статусе без статуса
+                        sendButton(chatId,adminService.checkAdmin(chatId),"Что вы хотели сделать с этим сообщением?");
                     } else if (userStatusService.getUserStatus(chatId).equals(GET_PET_FORM.getStatus())) {
                         // реакция на текстовое сообщение боту если пользователь в статусе получить форму отчета по питомцу
+                        if(reportService.addImgReport(update.getMessage())){
+                            // статус изображение отчета отправлено
+                            userStatusService.changeUserStatus(chatId, ADD_PET_REPORT_IMG.getStatus());
+                            sendMessage(chatId, "Отлично! Осталось только, написать о состоянии животного.");
+                        } else {
+                            sendMessage(chatId,"Первым сообщением отчета нужно отсылать фото.");
+                        }
                     } else if (userStatusService.getUserStatus(chatId).equals(GET_CONTACT_INFORMATION.getStatus())) {
                         // реакция на текстовое сообщение боту если пользователь в статусе получить контактную информацию
+                        if(contactInformationService.addContactInformation(message)){
+                            userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
+                            sendButton(chatId, adminService.checkAdmin(chatId),"Ваши данные сохранены. Скоро с Вами свяжутся. Чем я еще могу помочь?");
+                        } else {
+                            sendMessage(chatId,"Не корректно введены данные.\n" + contactInformationService.getContactInformation());
+                        }
+                    } else if (userStatusService.getUserStatus(chatId).equals(ADD_PET_REPORT_IMG.getStatus())) {
+                        if(reportService.addTextReport(update.getMessage())){
+                            // статус изображение отчета отправлено
+                            userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
+                            sendMessage(chatId, "Супер! Сегодня ежедневный отчет сдан");
+                        } else {
+                            sendMessage(chatId,"Вторым сообщением отчета нужно отсылать описание состояния животного.");
+                        }
                     } else if (userStatusService.getUserStatus(chatId).equals(CALL_A_VOLUNTEER.getStatus())) {
                         // реакция на текстовое сообщение боту если пользователь в статусе позвонить волонтеру
                     } else if (userStatusService.getUserStatus(chatId).equals(VIEW_PET_LIST.getStatus())) {
@@ -223,8 +244,10 @@ public class TelegramBot extends TelegramLongPollingBot {
                     userStatusService.changeUserStatus(chatId,"pet_report");
                     editMessage(chatId, messageId, newMessage);
                 } else if (callBackData.equals(CONTACT_INFORMATION_ADD.getCommand())) {
-                    String newMessage = "contact_information_add";// поменять на метод в сервисе
-                    editMessage(chatId, messageId, newMessage);
+                    // присылает в каком виде надо отсылать контактную информацию
+                    sendMessage(chatId, contactInformationService.getContactInformation());
+                    // переключить статус пользователя
+                    userStatusService.changeUserStatus(chatId, GET_CONTACT_INFORMATION.getStatus());
                 }
             }
         }
