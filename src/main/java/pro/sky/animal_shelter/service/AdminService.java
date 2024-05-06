@@ -1,7 +1,6 @@
 package pro.sky.animal_shelter.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import pro.sky.animal_shelter.model.*;
@@ -9,16 +8,22 @@ import pro.sky.animal_shelter.model.*;
 @Slf4j
 @Service
 public class AdminService {
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private AboutRepository aboutRepository;
-    @Autowired
-    private ContactInformationRepository contactInformationRepository;
-    @Autowired
-    private InfoRepository infoRepository;
-    @Autowired
-    private PetRepository petRepository;
+    private final UserRepository userRepository;
+    private final AboutRepository aboutRepository;
+    private final ContactInformationRepository contactInformationRepository;
+    private final InfoRepository infoRepository;
+    private final PetRepository petRepository;
+    public AdminService(UserRepository userRepository,
+                        AboutRepository aboutRepository,
+                        ContactInformationRepository contactInformationRepository,
+                        InfoRepository infoRepository,
+                        PetRepository petRepository){
+        this.userRepository = userRepository;
+        this.aboutRepository = aboutRepository;
+        this.contactInformationRepository = contactInformationRepository;
+        this.infoRepository = infoRepository;
+        this.petRepository = petRepository;
+    }
     public boolean checkAdmin(long chatId){
         var user = userRepository.findById(chatId);
         StringBuilder role = new StringBuilder();

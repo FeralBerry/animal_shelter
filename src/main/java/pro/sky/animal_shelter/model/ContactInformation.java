@@ -38,6 +38,6 @@ public class ContactInformation {
     }
     @Override
     public String toString() {
-        return  "id: " + id + ", сообщение: '" + message + "\n";
+        return  "id: " + id + ", сообщение: '" + message;
     }
 }
