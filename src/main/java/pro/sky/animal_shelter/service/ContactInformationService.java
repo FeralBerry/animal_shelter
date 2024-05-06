@@ -5,8 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pro.sky.animal_shelter.model.ContactInformationRepository;
 
-import java.util.Scanner;
-
 import static sun.tools.jconsole.Messages.MESSAGE;
 
 @Slf4j
@@ -17,7 +15,6 @@ public class ContactInformationService {
     public ContactInformationService(ContactInformationRepository contactInformationRepository){
         this.contactInformationRepository = contactInformationRepository;
     }
-    // ты реализовывал только этот метод (вывод информации при нажатии на ссылку) дальше этот метод привяжем к кнопке
     public String getContactInformation(){
         // Выдавать сообщение с типом как написать данные +7-9**-***-**-** ФИО.
         return MESSAGE;
