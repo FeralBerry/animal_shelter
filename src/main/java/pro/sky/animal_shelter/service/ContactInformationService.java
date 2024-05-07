@@ -10,13 +10,14 @@ import java.util.List;
 @Slf4j
 @Service
 public class ContactInformationService {
+    private String MESSAGE= "Введите номер телефона в формате: +7-9**-***-**-** ФИО";
     private final ContactInformationRepository contactInformationRepository;
     public ContactInformationService(ContactInformationRepository contactInformationRepository){
         this.contactInformationRepository = contactInformationRepository;
     }
     public String getContactInformation(){
         // Выдавать сообщение с типом как написать данные +7-9**-***-**-** ФИО.
-        return "";
+        return MESSAGE;
     }
     public boolean addContactInformation(String message){
         // парсим сообщение, сохраняем в базу данных и возвращаем true, если не правильно прислано сообщение, то присылаем false
