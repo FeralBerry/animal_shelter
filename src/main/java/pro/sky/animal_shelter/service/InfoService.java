@@ -18,6 +18,23 @@ public class InfoService {
             message.append("Описание пока отсутствует");
         } else {
             for (Info info1 : info) {
+                message.append(info1.getDocuments())
+                        .append(" ")
+                        .append(info1.getRules())
+                        .append(" ")
+                        .append(info1.getTransportation())
+                        .append(" ")
+                        .append(info1.getHouseForAPuppy())
+                        .append(" ")
+                        .append(info1.getHomeForAnAdultAnimal())
+                        .append(" ")
+                        .append(info1.getHomeForAnAnimalWithDisabilities())
+                        .append(" ")
+                        .append(info1.getTipsFromADogHandler())
+                        .append(" ")
+                        .append(info1.getRecommendationsOfADogHandler())
+                        .append(" ")
+                        .append(info1.getReasonsForRefusal());
 
             }
         }

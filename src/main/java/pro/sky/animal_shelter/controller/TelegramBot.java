@@ -2,7 +2,6 @@ package pro.sky.animal_shelter.controller;
 
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import pro.sky.animal_shelter.configuration.BotConfig;
@@ -13,12 +12,17 @@ import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.springframework.stereotype.Service;
+import pro.sky.animal_shelter.model.ContactInformation;
 import pro.sky.animal_shelter.service.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static pro.sky.animal_shelter.enums.AdminStatusEnum.*;
+import static pro.sky.animal_shelter.enums.AdminButtonMenuEnum.*;
 import static pro.sky.animal_shelter.enums.BotCommandEnum.*;
+import static pro.sky.animal_shelter.enums.UserButtonEnum.*;
+import static pro.sky.animal_shelter.enums.UserSatausEnum.*;
 
 // Slf4j - аннотация для использования логов из библиотеки lombok и авто подключения сервисов в конструктор
 @Slf4j
@@ -96,28 +100,40 @@ public class TelegramBot extends TelegramLongPollingBot {
             long chatId = update.getMessage().getChatId();
             // сверяем полученное сообщение и выполняем команду
             if(message.equals(START.getUrl())){
-                // формируем сообщение из startService
-                helloMsg.append(startService.start(update.getMessage()));
-                // отправляем сообщение пользователю
-                sendMessage(chatId, helloMsg.toString());
+                // переключить статус пользователя
+
+                //userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
+                    // формируем сообщение из startService
+                    helloMsg.append(startService.start(update.getMessage()));
+                    // отправляем сообщение пользователю
+                    sendMessage(chatId, helloMsg.toString());
+
             } else if (message.equals(ABOUT.getUrl())) {
                 // формируем сообщение из aboutService и стандартного сообщения о связи
                 helloMsg.append(aboutService.about())
                         .append(backMsg);
                 // отправляем сообщение пользователю
                 sendMessage(chatId, helloMsg.toString());
+                // переключить статус пользователя
+                userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
             } else if (message.equals(INFO.getUrl())) {
                 // формируем сообщение из infoService и стандартного сообщения о связи
                 helloMsg.append(infoService.info())
                         .append(backMsg);
                 // отправляем сообщение пользователю
                 sendMessage(chatId, helloMsg.toString());
+                // переключить статус пользователя
+                userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
             } else if (message.equals(PET_REPORT_FORM.getUrl())) {
                 // присылает форму отчета
                 sendMessage(chatId, petService.getPetForm());
+                // переключить статус пользователя
+                userStatusService.changeUserStatus(chatId, GET_PET_FORM.getStatus());
             } else if (message.equals(CONTACT_INFORMATION.getUrl())) {
                 // присылает в каком виде надо отсылать контактную информацию
                 sendMessage(chatId, contactInformationService.getContactInformation());
+                // переключить статус пользователя
+                userStatusService.changeUserStatus(chatId, GET_CONTACT_INFORMATION.getStatus());
             } else if (message.equals(TO_CALL_A_VOLUNTEER.getUrl())) {
                 // должен обрабатывать метод сервиса
                 // Вызов волонтера осуществляется одним из следующих способов (на выбор разработчика):
@@ -126,78 +142,109 @@ public class TelegramBot extends TelegramLongPollingBot {
                 //- прямо в боте, то есть волонтер регистрируется в том же боте как администратор, а сообщения от пользователя перенаправляются в боте к волонтеру.
                 String to_call_a_volunteer = "";
                 sendMessage(chatId, to_call_a_volunteer);
+                userStatusService.changeUserStatus(chatId, CALL_A_VOLUNTEER.getStatus());
             } else if (message.equals(PET_LIST.getUrl())) {
                 sendMessage(chatId, petService.getPets());
+                // переключить статус пользователя
+                userStatusService.changeUserStatus(chatId, VIEW_PET_LIST.getStatus());
             } else {
                 if (message.equals(getBotToken())) {
                     // при отправке токена бота пользователь становится администратором
                     adminService.setRole(update.getMessage());
                     sendMessage(chatId, "Поздравляем вы стали админом");
-                    sendButton(chatId, adminService.checkAdmin(chatId));
+                    // переключить статус пользователя
+                    userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
+                    sendButton(chatId, adminService.checkAdmin(chatId), "Главное меню администратора.");
                 } else if (adminService.checkAdmin(chatId)) {
-                    // отслеживание статуса пользователя
-                    switch (userStatusService.getUserStatus(chatId)) {
-                        // создание списка кнопок всплывающих администратору при отправке сообщения
-                        case "null" -> sendButton(chatId, adminService.checkAdmin(chatId));
-                        // действия бота если пользователь в статусе просмотра контактной информации
-                        case "view_contact_information" -> {
-                            // выход в главное меню
-                            if (message.equals("exit")) {
-                                userStatusService.changeUserStatus(chatId, "null");
-                                sendButton(chatId, adminService.checkAdmin(chatId));
-                            } else {
-                                // проверка введенных данных пользователя
-                                if (isNumeric(message)) {
-                                    sendMessage(chatId, contactInformationService.deleteContactInformationById(Long.parseLong(message)) + "\nДля удаления обратной связи введите ее id, для перехода ко всем командам exit");
-                                } else {
-                                    sendMessage(chatId, "Ввели не id, введите id обратной связи или exit для перехода ко всем командам");
-                                }
-                            }
+                    if(userStatusService.getUserStatus(chatId).equals(VIEW_CONTACT_INFORMATION.getStatus())){
+                        if(isNumeric(message)) {
+                            sendMessage(chatId, contactInformationService.deleteContactInformationById(Long.parseLong(message)));
+                            sendMessage(chatId, "Ввели не id или не число.\nДля удаления обратной связи введите ее id, для перехода ко всем командам exit или нажмите /start");
+                        } else if (message.equals("exit")) {
+                            sendButton(chatId, adminService.checkAdmin(chatId), "Главное меню администратора.");
+                        } else {
+                            sendMessage(chatId, "Ввели не id или не число.\nДля удаления обратной связи введите ее id, для перехода ко всем командам exit или нажмите /start");
                         }
                     }
+                    // реакция бота на текстовое сообщение от администратора
+                    sendButton(chatId, adminService.checkAdmin(chatId), "Главное меню администратора.");
                 } else {
-                    sendButton(chatId, adminService.checkAdmin(chatId));
+                    // отслеживание статуса пользователя и реагируем на текстовое сообщение
+                    if(userStatusService.getUserStatus(chatId).equals(NO_STATUS.getStatus())){
+                        sendButton(chatId,adminService.checkAdmin(chatId),"Что вы хотели сделать с этим сообщением?");
+                    } else if (userStatusService.getUserStatus(chatId).equals(GET_PET_FORM.getStatus())) {
+                        // реакция на текстовое сообщение боту если пользователь в статусе получить форму отчета по питомцу
+                        if(reportService.addImgReport(update.getMessage())){
+                            // статус изображение отчета отправлено
+                            userStatusService.changeUserStatus(chatId, ADD_PET_REPORT_IMG.getStatus());
+                            sendMessage(chatId, "Отлично! Осталось только, написать о состоянии животного.");
+                        } else {
+                            sendMessage(chatId,"Первым сообщением отчета нужно отсылать фото.");
+                        }
+                    } else if (userStatusService.getUserStatus(chatId).equals(GET_CONTACT_INFORMATION.getStatus())) {
+                        // реакция на текстовое сообщение боту если пользователь в статусе получить контактную информацию
+                        if(contactInformationService.addContactInformation(message)){
+                            userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
+                            sendButton(chatId, adminService.checkAdmin(chatId),"Ваши данные сохранены. Скоро с Вами свяжутся. Чем я еще могу помочь?");
+                        } else {
+                            sendMessage(chatId,"Не корректно введены данные.\n" + contactInformationService.getContactInformation());
+                        }
+                    } else if (userStatusService.getUserStatus(chatId).equals(ADD_PET_REPORT_IMG.getStatus())) {
+                        if(reportService.addTextReport(update.getMessage())){
+                            // статус изображение отчета отправлено
+                            userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
+                            sendMessage(chatId, "Супер! Сегодня ежедневный отчет сдан");
+                        } else {
+                            sendMessage(chatId,"Вторым сообщением отчета нужно отсылать описание состояния животного.");
+                        }
+                    } else if (userStatusService.getUserStatus(chatId).equals(CALL_A_VOLUNTEER.getStatus())) {
+                        // реакция на текстовое сообщение боту если пользователь в статусе позвонить волонтеру
+                    } else if (userStatusService.getUserStatus(chatId).equals(VIEW_PET_LIST.getStatus())) {
+                        // реакция на текстовое сообщение боту если пользователь в статусе просмотра питомцев
+                    }
                 }
             }
         }  else if (update.hasCallbackQuery()) {
+            // получение id последнего сообщения
             int messageId = update.getCallbackQuery().getMessage().getMessageId();
+            // получение чата сообщения
             long chatId = update.getCallbackQuery().getMessage().getChatId();
+            // получение id кнопки
             String callBackData = update.getCallbackQuery().getData();
             if(adminService.checkAdmin(chatId)){
-                switch (callBackData) {
-                    case "pet_add" -> {
-                        String newMessage = "pet_add";// поменять на метод в сервисе
-                        editMessage(chatId, messageId, newMessage);
-                    }
-                    case "view_contact_information" -> {
-                        // получение списка обратной связи
-                        StringBuilder newMessage = new StringBuilder();
-                        if(contactInformationService.getAllContactInformation().equals("[]")){
-                            newMessage.append("Пока никто не оставлял заявок на обратную связь.");
-                            // изменение статуса пользователя
-                            userStatusService.changeUserStatus(chatId,"null");
-                            sendButton(chatId, adminService.checkAdmin(chatId));
-                        } else {
-                            newMessage.append(contactInformationService.getAllContactInformation())
-                                    .append("\n")
-                                    .append("Для удаления обратной связи введите ее id, для перехода ко всем командам exit");
-                            // изменение статуса пользователя
-                            userStatusService.changeUserStatus(chatId,"view_contact_information");
+                // реакции на кнопки администратора
+                if(callBackData.equals(VIEW_CONTACT_INFORMATION_COMMAND.getCommand())){
+                    // получение списка обратной связи
+                    StringBuilder newMessage = new StringBuilder();
+                    if(contactInformationService.getAllContactInformation().isEmpty()){
+                        newMessage.append("Пока никто не оставлял заявок на обратную связь.");
+                        // изменение статуса пользователя
+                        userStatusService.changeUserStatus(chatId,NO_STATUS.getStatus());
+                        sendButton(chatId, adminService.checkAdmin(chatId), "Главное меню администратора.");
+                    } else {
+                        for (ContactInformation contactInformation : contactInformationService.getAllContactInformation()){
+                            newMessage.append(contactInformation.toString())
+                                    .append("\n");
                         }
-                        editMessage(chatId, messageId, newMessage.toString());
+                        newMessage.append("Для удаления обратной связи введите ее id, для перехода ко всем командам exit или нажмите /start");
+                        // изменение статуса пользователя
+                        userStatusService.changeUserStatus(chatId,VIEW_CONTACT_INFORMATION.getStatus());
                     }
+                    editMessage(chatId, messageId, newMessage.toString());
+                } else if (callBackData.equals(PET_ADD_COMMAND.getCommand())) {
+
                 }
             } else {
-                switch (callBackData) {
-                    case "pet_report" -> {
-                        String newMessage = "pet_report";// поменять на метод в сервисе
-                        userStatusService.changeUserStatus(chatId,"pet_report");
-                        editMessage(chatId, messageId, newMessage);
-                    }
-                    case "contact_information_add" -> {
-                        String newMessage = "contact_information_add";// поменять на метод в сервисе
-                        editMessage(chatId, messageId, newMessage);
-                    }
+                // реакции на кнопки пользователя
+                if(callBackData.equals(PET_REPORT.getCommand())){
+                    String newMessage = "pet_report";// поменять на метод в сервисе
+                    userStatusService.changeUserStatus(chatId,"pet_report");
+                    editMessage(chatId, messageId, newMessage);
+                } else if (callBackData.equals(CONTACT_INFORMATION_ADD.getCommand())) {
+                    // присылает в каком виде надо отсылать контактную информацию
+                    sendMessage(chatId, contactInformationService.getContactInformation());
+                    // переключить статус пользователя
+                    userStatusService.changeUserStatus(chatId, GET_CONTACT_INFORMATION.getStatus());
                 }
             }
         }
@@ -226,19 +273,20 @@ public class TelegramBot extends TelegramLongPollingBot {
             log.error("Error occurred: " + e.getMessage());
         }
     }
-    private void sendButton(long chatId, boolean role){
+    private void sendButton(long chatId, boolean role, String text){
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setText("Что делаем дальше?");
+        message.setText(text);
         InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
         // проверка роли пользователя
         if (role){
-            markupInLine.setKeyboard(createButtonService.createButtonToMainMenuAdmin());
+            if(userStatusService.getUserStatus(chatId).equals(NO_STATUS.getStatus())){
+                markupInLine.setKeyboard(createButtonService.createButtonToMainMenuAdmin());
+            }
         } else {
             markupInLine.setKeyboard(createButtonService.createButtonToUser());
         }
         message.setReplyMarkup(markupInLine);
-        log.info(String.valueOf(message));
         try {
             execute(message);
         } catch (TelegramApiException e){
