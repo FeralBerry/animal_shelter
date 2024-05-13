@@ -1,3 +1,4 @@
+
 package pro.sky.animal_shelter.service;
 
 import lombok.extern.slf4j.Slf4j;
@@ -27,11 +28,13 @@ public class CallService {
         this.adminService = adminService;
     }
 
-    /**
+
+/**
      *
      * @param chatId
      * @return
      */
+
     public long createCall(long chatId){
         Random randomizer = new Random();
         if(userRepository.findAllAdmin().isEmpty()){
