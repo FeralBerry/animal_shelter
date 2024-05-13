@@ -1,7 +1,6 @@
 package pro.sky.animal_shelter.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import pro.sky.animal_shelter.model.User;
@@ -10,8 +9,10 @@ import pro.sky.animal_shelter.model.UserRepository;
 @Slf4j
 @Service
 public class StartService {
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    public StartService(UserRepository userRepository){
+        this.userRepository = userRepository;
+    }
     private final String MESSAGE =      "- Узнать информацию о приюте /about\n" +
                                         "- Как взять животное из приюта /info\n" +
                                         "- Просмотреть форму отчета /pet_report_form\n" +

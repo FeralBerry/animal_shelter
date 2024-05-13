@@ -1,7 +1,6 @@
 package pro.sky.animal_shelter.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pro.sky.animal_shelter.model.User;
 import pro.sky.animal_shelter.model.UserRepository;
@@ -10,8 +9,10 @@ import pro.sky.animal_shelter.model.UserRepository;
 @Slf4j
 @Service
 public class UserStatusService {
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    public UserStatusService(UserRepository userRepository){
+        this.userRepository = userRepository;
+    }
     public void changeUserStatus(long chatId, String newStatus){
         User user = new User();
         userRepository.findById(chatId)
