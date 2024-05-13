@@ -11,9 +11,7 @@ public class Pet {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
     private String petName;
-    private String filePath;
-    private long fileSize;
-    private String mediaType;
+    private String fileName;
     @Lob
     private byte[] data;
     public Long getId() {
@@ -22,14 +20,8 @@ public class Pet {
     public String getPetName() {
         return petName;
     }
-    public String getFilePath() {
-        return filePath;
-    }
-    public long getFileSize() {
-        return fileSize;
-    }
-    public String getMediaType() {
-        return mediaType;
+    public String getFileName() {
+        return fileName;
     }
     public byte[] getData() {
         return data;
@@ -40,14 +32,8 @@ public class Pet {
     public void setPetName(String petName) {
         this.petName = petName;
     }
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
-    }
-    public void setFileSize(long fileSize) {
-        this.fileSize = fileSize;
-    }
-    public void setMediaType(String mediaType) {
-        this.mediaType = mediaType;
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
     public void setData(byte[] data) {
         this.data = data;
@@ -57,11 +43,11 @@ public class Pet {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Pet pet = (Pet) o;
-        return fileSize == pet.fileSize && Objects.equals(id, pet.id) && Objects.equals(petName, pet.petName) && Objects.equals(filePath, pet.filePath) && Objects.equals(mediaType, pet.mediaType) && Arrays.equals(data, pet.data);
+        return Objects.equals(id, pet.id) && Objects.equals(petName, pet.petName) && Objects.equals(fileName, pet.fileName) && Arrays.equals(data, pet.data);
     }
     @Override
     public int hashCode() {
-        int result = Objects.hash(id, petName, filePath, fileSize, mediaType);
+        int result = Objects.hash(id, petName, fileName);
         result = 31 * result + Arrays.hashCode(data);
         return result;
     }
@@ -70,9 +56,7 @@ public class Pet {
         return "Pet{" +
                 "id=" + id +
                 ", petName='" + petName + '\'' +
-                ", filePath='" + filePath + '\'' +
-                ", fileSize=" + fileSize +
-                ", mediaType='" + mediaType + '\'' +
+                ", fileName='" + fileName + '\'' +
                 ", data=" + Arrays.toString(data) +
                 '}';
     }

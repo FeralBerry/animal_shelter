@@ -14,13 +14,8 @@ public enum BotCommandEnum {
     BotCommandEnum(String url) {
         this.url = url;
     }
-    public String getUrl() {
-        return "/" + url;
-    }
     @Override
     public String toString() {
-        return "BotCommandEnum{" +
-                "url='" + url + '\'' +
-                '}';
+        return "/" + url;
     }
 }
