@@ -15,8 +15,16 @@ public class PetService {
         this.petRepository = petRepository;
         this.userRepository = userRepository;
     }
+
+    private static String PET_FORM = "В ежедневный отчет входит следующая информация:\n" +
+            "- Фото животного\n" +
+            "- Рацион животного\n" +
+            "- Общее самочувствие и привыкание к новому месту\n" +
+            "- Изменения в поведении: отказ от старых привычек, приобретение новых\n\n" +
+            "Отчет нужно присылать каждый день, ограничений в сутках по времени сдачи отчета нет.";
     public String getPetForm(){
-        return "";
+
+        return PET_FORM;
     }
     // получать информацию из БД всех животных
     public List<Pet> getPets(){
