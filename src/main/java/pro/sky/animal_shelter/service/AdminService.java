@@ -8,11 +8,35 @@ import pro.sky.animal_shelter.model.*;
 @Slf4j
 @Service
 public class AdminService {
+    /**
+     *
+     */
     private final UserRepository userRepository;
+    /**
+     *
+     */
     private final AboutRepository aboutRepository;
+    /**
+     *
+     */
     private final ContactInformationRepository contactInformationRepository;
+    /**
+     *
+     */
     private final InfoRepository infoRepository;
+    /**
+     *
+     */
     private final PetRepository petRepository;
+
+    /**
+     *
+     * @param userRepository
+     * @param aboutRepository
+     * @param contactInformationRepository
+     * @param infoRepository
+     * @param petRepository
+     */
     public AdminService(UserRepository userRepository,
                         AboutRepository aboutRepository,
                         ContactInformationRepository contactInformationRepository,
@@ -24,6 +48,12 @@ public class AdminService {
         this.infoRepository = infoRepository;
         this.petRepository = petRepository;
     }
+
+    /**
+     *
+     * @param chatId
+     * @return
+     */
     public boolean checkAdmin(long chatId){
         var user = userRepository.findById(chatId);
         StringBuilder role = new StringBuilder();
@@ -34,6 +64,11 @@ public class AdminService {
         }
         return role.toString().equals("admin");
     }
+
+    /**
+     *
+     * @param message
+     */
     public void setRole(Message message){
         User user = new User();
         user.setChatId(message.getChatId());

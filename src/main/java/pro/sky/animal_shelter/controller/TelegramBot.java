@@ -36,18 +36,60 @@ import static pro.sky.animal_shelter.enums.BotCommandEnum.*;
 @Slf4j
 @Service
 public class TelegramBot extends TelegramLongPollingBot {
+    /**
+     *
+     */
     private final PetService petService;
+    /**
+     *
+     */
     private final ReportService reportService;
+    /**
+     *
+     */
     private final AdminService adminService;
+    /**
+     *
+     */
     private final ContactInformationService contactInformationService;
+    /**
+     *
+     */
     private final CreateButtonService createButtonService;
+    /**
+     *
+     */
     private final UserStatusService userStatusService;
+    /**
+     *
+     */
     private final UrlController urlController;
+    /**
+     *
+     */
     private final CallController callController;
-    // добавочное сообщение в конце
+    /**
+     *
+     */
     private final String backMsg =  "Если хотите чтобы с Вами связались нажмите на ссылку или выберете пункт в меню /contact_information \n" +
                                     "Если хотите связаться с волонтером нажмите на ссылку или выберете пункт в меню /to_call_a_volunteer";
+    /**
+     *
+     */
     private final BotConfig config;
+
+    /**
+     *
+     * @param config
+     * @param petService
+     * @param reportService
+     * @param adminService
+     * @param contactInformationService
+     * @param createButtonService
+     * @param userStatusService
+     * @param callController
+     * @param urlController
+     */
     public TelegramBot(BotConfig config,
                        PetService petService,
                        ReportService reportService,
@@ -69,7 +111,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         // создаем список команд для меню
         List<BotCommand> botCommandList = new ArrayList<>();
         // добавление кнопок меню
-         botCommandList.add(new BotCommand(START.toString(),"get welcome message"));
+        botCommandList.add(new BotCommand(START.toString(),"get welcome message"));
         botCommandList.add(new BotCommand(ABOUT.toString(),"find out information about the nursery"));
         botCommandList.add(new BotCommand(INFO.toString(),"information about animals and rules"));
         botCommandList.add(new BotCommand(PET_REPORT_FORM.toString(),"animal report form"));
@@ -82,14 +124,29 @@ public class TelegramBot extends TelegramLongPollingBot {
             log.error("Error setting bot's command list: " + e.getMessage());
         }
     }
+
+    /**
+     *
+     * @return
+     */
     @Override
     public String getBotUsername(){
         return config.getBotName();
     }
+
+    /**
+     *
+     * @return
+     */
     @Override
     public String getBotToken(){
         return config.getToken();
     }
+
+    /**
+     *
+     * @param update
+     */
     @Override
     public void onUpdateReceived(org.telegram.telegrambots.meta.api.objects.Update update) {
         // формируем приветственное сообщение
@@ -104,10 +161,11 @@ public class TelegramBot extends TelegramLongPollingBot {
             // получаем id чата
             long chatId = update.getMessage().getChatId();
             if (message.equals(START.toString())) {
+                String msg = urlController.start(update.getMessage());
                 if(adminService.checkAdmin(chatId)){
-                    sendButton(chatId, true , urlController.start(update.getMessage()));
+                    sendButton(chatId, true , msg);
                 } else{
-                    sendMessage(chatId, helloMsg.append(urlController.start(update.getMessage())).toString());
+                    sendMessage(chatId, helloMsg.append(msg).toString());
                 }
             }
             else if (message.equals(INFO.toString())) {
@@ -279,6 +337,12 @@ public class TelegramBot extends TelegramLongPollingBot {
             }
         }
     }
+
+    /**
+     *
+     * @param chatId
+     * @param textToSend
+     */
     // метод для отправки сообщения ботом
     protected void sendMessage(long chatId, String textToSend){
         SendMessage message = new SendMessage();
@@ -291,6 +355,13 @@ public class TelegramBot extends TelegramLongPollingBot {
             log.error("Error occurred: " + e.getMessage());
         }
     }
+
+    /**
+     *
+     * @param chatId
+     * @param messageId
+     * @param newMessage
+     */
     // создание всплывающей кнопки при отправке сообщения
     private void editMessage(long chatId, int messageId, String newMessage){
         EditMessageText message = new EditMessageText();
@@ -303,6 +374,13 @@ public class TelegramBot extends TelegramLongPollingBot {
             log.error("Error occurred: " + e.getMessage());
         }
     }
+
+    /**
+     *
+     * @param chatId
+     * @param role
+     * @param text
+     */
     void sendButton(long chatId, boolean role, String text){
         SendMessage message = new SendMessage();
         if(text.equals("")){
@@ -334,6 +412,14 @@ public class TelegramBot extends TelegramLongPollingBot {
             log.error("Error occurred: " + e.getMessage());
         }
     }
+
+    /**
+     *
+     * @param chatId
+     * @param imageBytes
+     * @param fileName
+     * @param caption
+     */
     public void sendPhotoMessage(long chatId, byte[] imageBytes, String fileName, String caption){
         SendPhoto sendPhoto = new SendPhoto();
         sendPhoto.setChatId(chatId);
@@ -347,6 +433,12 @@ public class TelegramBot extends TelegramLongPollingBot {
             log.error("Error occurred: " + e.getMessage());
         }
     }
+
+    /**
+     *
+     * @param str
+     * @return
+     */
     // проверка является ли строка Long или нет
     public static boolean isNumeric(String str) {
         try {

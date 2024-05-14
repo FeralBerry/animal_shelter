@@ -9,10 +9,24 @@ import pro.sky.animal_shelter.model.UserRepository;
 @Slf4j
 @Service
 public class UserStatusService {
+    /**
+     *
+     */
     private final UserRepository userRepository;
+
+    /**
+     *
+     * @param userRepository
+     */
     public UserStatusService(UserRepository userRepository){
         this.userRepository = userRepository;
     }
+
+    /**
+     *
+     * @param chatId
+     * @param newStatus
+     */
     public void changeUserStatus(long chatId, String newStatus){
         User user = new User();
         userRepository.findById(chatId)
@@ -27,6 +41,12 @@ public class UserStatusService {
         userRepository.save(user);
         log.info("user " + user +" changed status: " + newStatus);
     }
+
+    /**
+     *
+     * @param chatId
+     * @return
+     */
     public String getUserStatus(long chatId){
         StringBuilder loc = new StringBuilder();
         userRepository.findById(chatId)

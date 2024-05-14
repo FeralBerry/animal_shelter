@@ -9,10 +9,23 @@ import pro.sky.animal_shelter.model.AboutRepository;
 @Slf4j
 @Service
 public class AboutService {
+    /**
+     *
+     */
     private final AboutRepository aboutRepository;
+
+    /**
+     *
+     * @param aboutRepository
+     */
     public AboutService(AboutRepository aboutRepository){
         this.aboutRepository = aboutRepository;
     }
+
+    /**
+     *
+     * @return
+     */
     public String about(){
         StringBuilder message = new StringBuilder();
         var about = aboutRepository.findAll();

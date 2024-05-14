@@ -9,19 +9,47 @@ import java.util.List;
 @Slf4j
 @Service
 public class PetService {
+    /**
+     *
+     */
     private final PetRepository petRepository;
+    /**
+     *
+     */
     private final UserRepository userRepository;
+
+    /**
+     *
+     * @param petRepository
+     * @param userRepository
+     */
     public PetService(PetRepository petRepository,UserRepository userRepository){
         this.petRepository = petRepository;
         this.userRepository = userRepository;
     }
+
+    /**
+     *
+     * @return
+     */
     public String getPetForm(){
         return "";
     }
+
+    /**
+     *
+     * @return
+     */
     // получать информацию из БД всех животных
     public List<Pet> getPets(){
         return petRepository.findAll();
     }
+
+    /**
+     *
+     * @param chatId
+     * @return
+     */
     // получить информацию по определенному животному
     public Pet getPet(long chatId){
         var user = userRepository.findById(chatId).stream().toList();
@@ -49,14 +77,28 @@ public class PetService {
             }
         }
     }
+
+    /**
+     *
+     * @param chatId
+     * @param pet
+     */
     // проверять роль пользователя и добавлять животного в БД
     public void addPet(long chatId, Pet pet){
 
     }
+
+    /**
+     *
+     */
     // проверять роль пользователя и изменяем животного в БД
     public void editPet(){
 
     }
+
+    /**
+     *
+     */
     // проверять роль пользователя и удаляем животного из БД
     public void deletePet(){
 

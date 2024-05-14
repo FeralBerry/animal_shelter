@@ -9,14 +9,50 @@ import static pro.sky.animal_shelter.enums.UserSatausEnum.*;
 
 @Service
 public class UrlController{
+    /**
+     *
+     */
     private final AdminService adminService;
+    /**
+     *
+     */
     private final UserStatusService userStatusService;
+    /**
+     *
+     */
     private final StartService startService;
+    /**
+     *
+     */
     private final InfoService infoService;
+    /**
+     *
+     */
     private final AboutService aboutService;
+    /**
+     *
+     */
     private final PetService petService;
+    /**
+     *
+     */
     private final ContactInformationService contactInformationService;
+    /**
+     *
+     */
     private final CallService callService;
+
+    /**
+     *
+     * @param adminService
+     * @param userStatusService
+     * @param startService
+     * @param infoService
+     * @param aboutService
+     * @param petService
+     * @param callService
+     * @param contactInformationService
+     */
     public UrlController(AdminService adminService,
                          UserStatusService userStatusService,
                          StartService startService,
@@ -42,11 +78,13 @@ public class UrlController{
      */
     public String start(Message message){
         long chatId = message.getChatId();
-        userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
         if (adminService.checkAdmin(chatId)) {
+            userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
             return "Главное меню администратора.";
         } else {
-            return startService.start(message);
+            String msg = startService.start(message);
+            userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
+            return msg;
         }
     }
 

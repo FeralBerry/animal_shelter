@@ -5,8 +5,15 @@ import pro.sky.animal_shelter.service.CallService;
 
 @Service
 public class CallController {
+    /**
+     *
+     */
     private final CallService callService;
 
+    /**
+     *
+     * @param callService
+     */
     public CallController(CallService callService){
         this.callService = callService;
     }
