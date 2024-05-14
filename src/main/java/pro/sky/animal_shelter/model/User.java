@@ -14,29 +14,36 @@ public class User {
     private String userName;
     private String role;
     private String locationUserOnApp;
+    private long petId;
     public Long getChatId() {
         return chatId;
-    }
-    public void setChatId(Long chatId) {
-        this.chatId = chatId;
     }
     public String getFirstName() {
         return firstName;
     }
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
     public String getLastName() {
         return lastName;
-    }
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
     }
     public String getUserName() {
         return userName;
     }
+    public String getLocationUserOnApp(){
+        return locationUserOnApp;
+    }
     public String getRole() {
         return role;
+    }
+    public long getPetId() {
+        return petId;
+    }
+    public void setChatId(Long chatId) {
+        this.chatId = chatId;
+    }
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
     public void setRole(String role) {
         this.role = role;
@@ -44,13 +51,12 @@ public class User {
     public void setUserName(String userName) {
         this.userName = userName;
     }
-    public String getLocationUserOnApp(){
-        return locationUserOnApp;
-    }
     public void setLocationUserOnApp(String locationUserOnApp){
         this.locationUserOnApp = locationUserOnApp;
     }
-
+    public void setPetId(long petId){
+        this.petId = petId;
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
