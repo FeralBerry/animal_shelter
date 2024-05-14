@@ -3,7 +3,7 @@ package pro.sky.animal_shelter.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import pro.sky.animal_shelter.enums.AdminButtonToMainMenuEnum;
+import pro.sky.animal_shelter.enums.AdminButtonMenuEnum;
 import pro.sky.animal_shelter.enums.UserButtonEnum;
 
 
@@ -21,8 +21,8 @@ public class CreateButtonService {
         // список кнопок 1 ряда
         List<InlineKeyboardButton> rowInLine = new ArrayList<>();
         // обходим массив enum кнопок для стартового меню админа
-        for (AdminButtonToMainMenuEnum adminButtonToMainMenuEnum : AdminButtonToMainMenuEnum.values()){
-            rowInLine.add(createButton(adminButtonToMainMenuEnum.getText(),adminButtonToMainMenuEnum.getCommand()));
+        for (AdminButtonMenuEnum adminButtonMenuEnum : AdminButtonMenuEnum.values()){
+            rowInLine.add(createButton(adminButtonMenuEnum.getText(), adminButtonMenuEnum.getCommand()));
         }
         // разделяем кнопки на строки
         rowsInLine = List.of(partition(rowInLine, COUNT_BUTTON_ADMIN_ON_SCREEN));
