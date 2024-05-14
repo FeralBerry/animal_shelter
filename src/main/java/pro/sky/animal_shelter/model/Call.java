@@ -14,7 +14,7 @@ public class Call {
     private Long id;
     private Long userChatId;
     private Long adminChatId;
-
+    private Long updatedAt;
     public Long getId() {
         return id;
     }
@@ -25,6 +25,9 @@ public class Call {
 
     public Long getAdminChatId() {
         return adminChatId;
+    }
+    public Long getUpdatedAt() {
+        return updatedAt;
     }
 
     public void setId(Long id) {
@@ -38,18 +41,21 @@ public class Call {
     public void setAdminChatId(Long adminChatId) {
         this.adminChatId = adminChatId;
     }
+    public void setUpdatedAt(Long updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Call call = (Call) o;
-        return Objects.equals(id, call.id) && Objects.equals(userChatId, call.userChatId) && Objects.equals(adminChatId, call.adminChatId);
+        return Objects.equals(id, call.id) && Objects.equals(userChatId, call.userChatId) && Objects.equals(adminChatId, call.adminChatId) && Objects.equals(updatedAt, call.updatedAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, userChatId, adminChatId);
+        return Objects.hash(id, userChatId, adminChatId, updatedAt);
     }
 
     @Override
@@ -58,6 +64,7 @@ public class Call {
                 "id=" + id +
                 ", userChatId=" + userChatId +
                 ", adminChatId=" + adminChatId +
+                ", updatedAt=" + updatedAt +
                 '}';
     }
 }

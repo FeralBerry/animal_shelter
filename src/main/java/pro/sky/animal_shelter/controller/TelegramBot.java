@@ -2,6 +2,7 @@ package pro.sky.animal_shelter.controller;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
@@ -17,6 +18,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.springframework.stereotype.Service;
 import pro.sky.animal_shelter.enums.AdminStatusEnum;
 
+import pro.sky.animal_shelter.model.Call;
+import pro.sky.animal_shelter.model.CallRepository;
 import pro.sky.animal_shelter.model.ContactInformation;
 import pro.sky.animal_shelter.model.Pet;
 import pro.sky.animal_shelter.service.*;
@@ -24,6 +27,7 @@ import pro.sky.animal_shelter.service.*;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static pro.sky.animal_shelter.enums.AdminStatusEnum.*;
@@ -77,6 +81,11 @@ public class TelegramBot extends TelegramLongPollingBot {
      */
     private final CallController callController;
     /**
+     * Создаем поле callRepository для дальнейшей инициализации с помощью конструктора
+     * и записи в поле callRepository всех методов класса CallRepository и работы с базой данных
+     */
+    private final CallRepository callRepository;
+    /**
      * Создаем поле backMsg, для хранения стандартного сообщения добавляемого в конце
      * сообщения от /start /about /info методов
      */
@@ -108,6 +117,7 @@ public class TelegramBot extends TelegramLongPollingBot {
      * @param callController методы для создания чата администратора и пользователя через бота,
      *                       и обработки начала и окончания переписки
      * @param urlController методы обработки команд бота связанных с URL
+     * @param callRepository методы для работы с базой данных
 
      * Создание меню бота при помощи BotCommand
      * и обработка ошибки в случае отсутствия переменной в enum или других ошибок
@@ -120,7 +130,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                        CreateButtonService createButtonService,
                        UserStatusService userStatusService,
                        CallController callController,
-                       UrlController urlController){
+                       UrlController urlController,
+                       CallRepository callRepository){
         this.petService = petService;
         this.reportService = reportService;
         this.adminService = adminService;
@@ -129,6 +140,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         this.userStatusService = userStatusService;
         this.urlController = urlController;
         this.callController = callController;
+        this.callRepository = callRepository;
         this.config = config;
         // создаем список команд для меню
         List<BotCommand> botCommandList = new ArrayList<>();
@@ -466,6 +478,28 @@ public class TelegramBot extends TelegramLongPollingBot {
             return true;
         } catch(NumberFormatException e){
             return false;
+        }
+    }
+
+    /**
+     * Метод для отслеживания открытых чатов и закрытие их после 30 минут без сообщений
+     * проверяем существование таких чатов раз в минуту
+     */
+    @Scheduled(cron = "0 * * * * *")
+    public void closeChat(){
+        long nowSec = (new Date().getTime())/1000;
+        Call call;
+        for (int i = 0; i < callRepository.findByChatUpdatedBefore(nowSec).size(); i++){
+            call = callRepository.findByChatUpdatedBefore(nowSec).get(i);
+            if((call.getUpdatedAt() + 3600L) > nowSec
+                    || !userStatusService.getUserStatus(call.getUserChatId()).equals(CALL_A_VOLUNTEER.getStatus())){
+                // удаляем чат и БД
+                callRepository.delete(call);
+                userStatusService.changeUserStatus(call.getUserChatId(), NO_STATUS.getStatus());
+                sendMessage(call.getUserChatId(),"Чат закрыт автоматически для нового обращения /to_call_a_volunteer");
+                userStatusService.changeUserStatus(call.getAdminChatId(), NO_STATUS.getStatus());
+                sendMessage(call.getAdminChatId(),"Чат с пользователем был закрыт");
+            }
         }
     }
 }
