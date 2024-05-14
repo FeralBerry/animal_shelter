@@ -37,58 +37,80 @@ import static pro.sky.animal_shelter.enums.BotCommandEnum.*;
 @Service
 public class TelegramBot extends TelegramLongPollingBot {
     /**
-     *
+     * Создаем поле petService для дальнейшей инициализации с помощью конструктора
+     * и записи в поле petService всех методов класса PetService
      */
     private final PetService petService;
     /**
-     *
+     * Создаем поле reportService для дальнейшей инициализации с помощью конструктора
+     * и записи в поле reportService всех методов класса ReportService
      */
     private final ReportService reportService;
     /**
-     *
+     * Создаем поле adminService для дальнейшей инициализации с помощью конструктора
+     * и записи в поле adminService всех методов класса AdminService
      */
     private final AdminService adminService;
     /**
-     *
+     * Создаем поле contactInformationService для дальнейшей инициализации с помощью конструктора
+     * и записи в поле contactInformationService всех методов класса ContactInformationService
      */
     private final ContactInformationService contactInformationService;
     /**
-     *
+     * Создаем поле createButtonService для дальнейшей инициализации с помощью конструктора
+     * и записи в поле createButtonService всех методов класса CreateButtonService
      */
     private final CreateButtonService createButtonService;
     /**
-     *
+     * Создаем поле userStatusService для дальнейшей инициализации с помощью конструктора
+     * и записи в поле userStatusService всех методов класса UserStatusService
      */
     private final UserStatusService userStatusService;
     /**
-     *
+     * Создаем поле urlController для дальнейшей инициализации с помощью конструктора
+     * и записи в поле urlController всех методов класса UrlController
      */
     private final UrlController urlController;
     /**
-     *
+     * Создаем поле callController для дальнейшей инициализации с помощью конструктора
+     * и записи в поле callController всех методов класса CallController
      */
     private final CallController callController;
     /**
-     *
+     * Создаем поле backMsg, для хранения стандартного сообщения добавляемого в конце
+     * сообщения от /start /about /info методов
      */
     private final String backMsg =  "Если хотите чтобы с Вами связались нажмите на ссылку или выберете пункт в меню /contact_information \n" +
                                     "Если хотите связаться с волонтером нажмите на ссылку или выберете пункт в меню /to_call_a_volunteer";
     /**
-     *
+     * Создаем поле config для дальнейшей инициализации с помощью конструктора
+     * и хранения конфигурационных параметров бота, и их использования
      */
     private final BotConfig config;
 
     /**
-     *
-     * @param config
-     * @param petService
-     * @param reportService
-     * @param adminService
-     * @param contactInformationService
-     * @param createButtonService
-     * @param userStatusService
-     * @param callController
-     * @param urlController
+     * Конструктор класс TelegramBot в котором инициализируем
+     * @param config конфигурацию телеграмм бота
+     * @param petService методы для работы вывода информации о питомцах,
+     *                   добавления, изменения и удаления их из базы данных.
+     * @param reportService методы для работы вывода информации об отчетах,
+     *                      создание отчетов пользователем, просмотр отчетов администратором
+     *                      удаление отчетов администратором, отправка уведомления пользователю,
+     *                      если до 21 00 он не прислал отчет, отправка сообщения, что все отчеты сданы животное
+     *                      успешно усыновлено, если срок не продлен администратором
+     * @param adminService методы для обработки становления администратором, удаления из администраторов, проверка
+     *                     на администратора
+     * @param contactInformationService методы вывода информации как написать контакты для связи, сохранение
+     *                                  контактов для связи в базу данных, удаление контактов администратором
+     * @param createButtonService методы для создания кнопок пользователям и администраторам,
+     *                            в зависимости от необходимости.
+     * @param userStatusService методы для переключения статусов пользователей и администраторов
+     * @param callController методы для создания чата администратора и пользователя через бота,
+     *                       и обработки начала и окончания переписки
+     * @param urlController методы обработки команд бота связанных с URL
+
+     * Создание меню бота при помощи BotCommand
+     * и обработка ошибки в случае отсутствия переменной в enum или других ошибок
      */
     public TelegramBot(BotConfig config,
                        PetService petService,
@@ -126,8 +148,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
-     *
-     * @return
+     * @return возвращает название бота из application.properties
      */
     @Override
     public String getBotUsername(){
@@ -135,8 +156,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
-     *
-     * @return
+     * @return возвращает токен бота из application.properties
      */
     @Override
     public String getBotToken(){
@@ -144,8 +164,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
-     *
-     * @param update
+     * Основной метод бота отлавливающий все сообщения пользователя и распределяющий действия
+     * @param update массив данных поступающих от бота при обращении пользователя к нему
      */
     @Override
     public void onUpdateReceived(org.telegram.telegrambots.meta.api.objects.Update update) {
@@ -339,9 +359,9 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
-     *
-     * @param chatId
-     * @param textToSend
+     * Отправка текстового сообщения пользователю
+     * @param chatId id чата в который надо отправить текстовое сообщение
+     * @param textToSend текст, отправляемый пользователю
      */
     // метод для отправки сообщения ботом
     protected void sendMessage(long chatId, String textToSend){
@@ -357,10 +377,10 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
-     *
-     * @param chatId
-     * @param messageId
-     * @param newMessage
+     * Метод редактирования сообщения в чате
+     * @param chatId id чата в котором надо отредактировать сообщение
+     * @param messageId id сообщения, которое надо отредактировать
+     * @param newMessage сообщение на которое надо заменить
      */
     // создание всплывающей кнопки при отправке сообщения
     private void editMessage(long chatId, int messageId, String newMessage){
@@ -376,10 +396,10 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
-     *
-     * @param chatId
-     * @param role
-     * @param text
+     * Метод отправки всплывающих кнопок пользователю
+     * @param chatId id чата куда отправить кнопки
+     * @param role роль пользователя которому отправляем кнопки
+     * @param text текст сообщения пользователю перед кнопками, если текст не нужен нужно передать ""
      */
     void sendButton(long chatId, boolean role, String text){
         SendMessage message = new SendMessage();
@@ -414,11 +434,11 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
-     *
-     * @param chatId
-     * @param imageBytes
-     * @param fileName
-     * @param caption
+     * Метод отправки фотографии с подписью
+     * @param chatId id чата куда отправить фото
+     * @param imageBytes массив байтов картинки
+     * @param fileName название изображения
+     * @param caption подпись которую нужно отправить
      */
     public void sendPhotoMessage(long chatId, byte[] imageBytes, String fileName, String caption){
         SendPhoto sendPhoto = new SendPhoto();
@@ -435,9 +455,9 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
-     *
-     * @param str
-     * @return
+     * Метод проверки строки является ли она Long
+     * @param str строка для парсинга
+     * @return возвращает значение true, если строка является числом Long, false, если строка не является числом Long
      */
     // проверка является ли строка Long или нет
     public static boolean isNumeric(String str) {

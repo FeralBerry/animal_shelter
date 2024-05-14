@@ -9,7 +9,8 @@ import pro.sky.animal_shelter.model.*;
 @Service
 public class AdminService {
     /**
-     *
+     * Создаем поле userRepository для дальнейшей инициализации с помощью конструктора
+     * и записи в поле userRepository всех методов класса UserRepository
      */
     private final UserRepository userRepository;
     /**
@@ -30,8 +31,8 @@ public class AdminService {
     private final PetRepository petRepository;
 
     /**
-     *
-     * @param userRepository
+     * Конструктор класс TelegramBot в котором инициализируем
+     * @param userRepository методы для работы с таблицей users баз данных
      * @param aboutRepository
      * @param contactInformationRepository
      * @param infoRepository
@@ -50,9 +51,9 @@ public class AdminService {
     }
 
     /**
-     *
-     * @param chatId
-     * @return
+     * Проверка является ли пользователь администратором
+     * @param chatId принимает id пользователя
+     * @return возвращаем true, если пользователь администратор, false, если пользователь не является администратором
      */
     public boolean checkAdmin(long chatId){
         var user = userRepository.findById(chatId);
@@ -66,8 +67,9 @@ public class AdminService {
     }
 
     /**
-     *
-     * @param message
+     * Метод изменения статуса пользователя на администратора
+     * @param message получаем всю информацию о пользователе, что прислал сообщение,
+     *                и сохраняем пользователя с базу данных с новой ролью
      */
     public void setRole(Message message){
         User user = new User();
