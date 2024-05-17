@@ -8,36 +8,11 @@ import pro.sky.animal_shelter.model.*;
 @Slf4j
 @Service
 public class AdminService {
-    /**
-     * Создаем поле userRepository для дальнейшей инициализации с помощью конструктора
-     * и записи в поле userRepository всех методов класса UserRepository
-     */
     private final UserRepository userRepository;
-    /**
-     *
-     */
     private final AboutRepository aboutRepository;
-    /**
-     *
-     */
     private final ContactInformationRepository contactInformationRepository;
-    /**
-     *
-     */
     private final InfoRepository infoRepository;
-    /**
-     *
-     */
     private final PetRepository petRepository;
-
-    /**
-     * Конструктор класс TelegramBot в котором инициализируем
-     * @param userRepository методы для работы с таблицей users баз данных
-     * @param aboutRepository
-     * @param contactInformationRepository
-     * @param infoRepository
-     * @param petRepository
-     */
     public AdminService(UserRepository userRepository,
                         AboutRepository aboutRepository,
                         ContactInformationRepository contactInformationRepository,

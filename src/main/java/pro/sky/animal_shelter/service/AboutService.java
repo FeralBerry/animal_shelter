@@ -9,22 +9,16 @@ import pro.sky.animal_shelter.model.AboutRepository;
 @Slf4j
 @Service
 public class AboutService {
-    /**
-     *
-     */
+
     private final AboutRepository aboutRepository;
 
-    /**
-     *
-     * @param aboutRepository
-     */
     public AboutService(AboutRepository aboutRepository){
         this.aboutRepository = aboutRepository;
     }
 
     /**
-     *
-     * @return
+     * Метод берет информацию о приюте из БД и генерирует сообщение пользователю
+     * @return возвращает строку для вывода ее пользователю
      */
     public String about(){
         StringBuilder message = new StringBuilder();

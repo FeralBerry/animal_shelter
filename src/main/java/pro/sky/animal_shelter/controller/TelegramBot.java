@@ -16,8 +16,8 @@ import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.springframework.stereotype.Service;
-import pro.sky.animal_shelter.enums.AdminStatusEnum;
 
+import pro.sky.animal_shelter.enums.AdminStatusEnum;
 import pro.sky.animal_shelter.model.Call;
 import pro.sky.animal_shelter.model.CallRepository;
 import pro.sky.animal_shelter.model.ContactInformation;
@@ -181,16 +181,12 @@ public class TelegramBot extends TelegramLongPollingBot {
      */
     @Override
     public void onUpdateReceived(org.telegram.telegrambots.meta.api.objects.Update update) {
-        // формируем приветственное сообщение
         StringBuilder helloMsg = new StringBuilder();
-        // проверяем есть ли отправленные сообщение
         if(update.hasMessage() && update.getMessage().hasText()){
-            // получаем отправленное сообщение
             helloMsg.append("Привет ")
                     .append(update.getMessage().getChat().getFirstName())
                     .append("\n");
             String message = update.getMessage().getText();
-            // получаем id чата
             long chatId = update.getMessage().getChatId();
             if (message.equals(START.toString())) {
                 String msg = urlController.start(update.getMessage());
@@ -243,6 +239,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     Pet pet = new Pet();
                     switch (AdminStatusEnum.valueOf(userStatusService.getUserStatus(chatId))) {
                         case VIEW_CONTACT_INFORMATION -> {
+
                             if (isNumeric(message)) {
                                 sendMessage(chatId, contactInformationService.deleteContactInformationById(Long.parseLong(message)));
                                 sendMessage(chatId, "Ввели не id или не число.\nДля удаления обратной связи введите ее id, для перехода ко всем командам exit или нажмите /start");
@@ -291,11 +288,17 @@ public class TelegramBot extends TelegramLongPollingBot {
                             sendMessage(chatId, "Первым сообщением отчета нужно отсылать фото.");
                         }
                     } else if (userStatusService.getUserStatus(chatId).equals(GET_CONTACT_INFORMATION.getStatus())) {
-                        // реакция на текстовое сообщение боту если пользователь в статусе получить контактную информацию
-                        if (contactInformationService.addContactInformation(message)) {
-                            userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
+                         if (contactInformationService.addContactPhone(message,chatId)) {
+                            userStatusService.changeUserStatus(chatId, ADD_PHONE.getStatus());
+                            sendMessage(chatId, "Введите как к Вам обращаться.");
+                         } else {
+                            sendMessage(chatId, "Не корректно введены данные.\n" + contactInformationService.getContactInformation());
+                        }
+                    } else if (userStatusService.getUserStatus(chatId).equals(ADD_PHONE.getStatus())) {
+                        userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
+                        if(contactInformationService.addContactName(message,chatId)){
                             sendButton(chatId, adminService.checkAdmin(chatId), "Ваши данные сохранены. Скоро с Вами свяжутся. Чем я еще могу помочь?");
-                        } else {
+                        } else  {
                             sendMessage(chatId, "Не корректно введены данные.\n" + contactInformationService.getContactInformation());
                         }
                     } else if (userStatusService.getUserStatus(chatId).equals(ADD_PET_REPORT_IMG.getStatus())) {
@@ -313,7 +316,9 @@ public class TelegramBot extends TelegramLongPollingBot {
                     }
                 }
             }
-        }  else if (update.hasCallbackQuery()) {
+        }
+
+        if (update.hasCallbackQuery()) {
             // получение id последнего сообщения
             int messageId = update.getCallbackQuery().getMessage().getMessageId();
             // получение чата сообщения
@@ -321,13 +326,10 @@ public class TelegramBot extends TelegramLongPollingBot {
             // получение id кнопки
             String callBackData = update.getCallbackQuery().getData();
             if(adminService.checkAdmin(chatId)){
-                // реакции на кнопки администратора
                 if(callBackData.equals(VIEW_CONTACT_INFORMATION_COMMAND.getCommand())){
-                    // получение списка обратной связи
                     StringBuilder newMessage = new StringBuilder();
                     if(contactInformationService.getAllContactInformation().isEmpty()){
                         newMessage.append("Пока никто не оставлял заявок на обратную связь.");
-                        // изменение статуса пользователя
                         userStatusService.changeUserStatus(chatId,NO_STATUS.getStatus());
                         sendButton(chatId, adminService.checkAdmin(chatId), "Главное меню администратора.");
                     } else {
@@ -336,8 +338,6 @@ public class TelegramBot extends TelegramLongPollingBot {
                                     .append("\n");
                         }
                         newMessage.append("Для удаления обратной связи введите ее id, для перехода ко всем командам exit или нажмите /start");
-                        // изменение статуса пользователя
-                        userStatusService.changeUserStatus(chatId,VIEW_CONTACT_INFORMATION.getStatus());
                     }
                     editMessage(chatId, messageId, newMessage.toString());
                 } else if (callBackData.equals(PET_ADD_COMMAND.getCommand())) {
@@ -375,26 +375,22 @@ public class TelegramBot extends TelegramLongPollingBot {
      * @param chatId id чата в который надо отправить текстовое сообщение
      * @param textToSend текст, отправляемый пользователю
      */
-    // метод для отправки сообщения ботом
     protected void sendMessage(long chatId, String textToSend){
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText(textToSend);
-        // обрабатываем ошибку отправки
         try {
             execute(message);
         } catch (TelegramApiException e){
             log.error("Error occurred: " + e.getMessage());
         }
     }
-
     /**
      * Метод редактирования сообщения в чате
      * @param chatId id чата в котором надо отредактировать сообщение
      * @param messageId id сообщения, которое надо отредактировать
      * @param newMessage сообщение на которое надо заменить
      */
-    // создание всплывающей кнопки при отправке сообщения
     private void editMessage(long chatId, int messageId, String newMessage){
         EditMessageText message = new EditMessageText();
         message.setChatId(chatId);

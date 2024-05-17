@@ -23,6 +23,7 @@ public class CallController {
      * @param chatId id пользователя написавшего для обратной связи
      * @return возвращает id свободного администратора или 0 если свободного администратора сейчас нет
      */
+
     public long sendMessageToChat(long chatId){
         return callService.sendMessageChat(chatId);
     }

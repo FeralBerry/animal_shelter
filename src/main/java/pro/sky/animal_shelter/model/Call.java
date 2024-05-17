@@ -52,12 +52,10 @@ public class Call {
         Call call = (Call) o;
         return Objects.equals(id, call.id) && Objects.equals(userChatId, call.userChatId) && Objects.equals(adminChatId, call.adminChatId) && Objects.equals(updatedAt, call.updatedAt);
     }
-
     @Override
     public int hashCode() {
         return Objects.hash(id, userChatId, adminChatId, updatedAt);
     }
-
     @Override
     public String toString() {
         return "Call{" +

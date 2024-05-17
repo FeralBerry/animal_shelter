@@ -16,30 +16,10 @@ import static pro.sky.animal_shelter.enums.UserSatausEnum.NO_STATUS;
 @Slf4j
 @Service
 public class CallService {
-    /**
-     *
-     */
     private final UserStatusService userStatusService;
-    /**
-     *
-     */
     private final UserRepository userRepository;
-    /**
-     *
-     */
     private final CallRepository callRepository;
-    /**
-     *
-     */
     private final AdminService adminService;
-
-    /**
-     *
-     * @param userStatusService
-     * @param userRepository
-     * @param adminService
-     * @param callRepository
-     */
     public CallService(UserStatusService userStatusService,
                        UserRepository userRepository,
                        AdminService adminService,
