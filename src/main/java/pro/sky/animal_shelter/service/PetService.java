@@ -28,12 +28,16 @@ public class PetService {
         this.userRepository = userRepository;
     }
 
-    /**
-     *
-     * @return
-     */
-    public String getPetForm(){
-        return "";
+    private static String PET_FORM = "В ежедневный отчет входит следующая информация:\n" +
+            "- Фото животного\n" +
+            "- Рацион животного\n" +
+            "- Общее самочувствие и привыкание к новому месту\n" +
+            "- Изменения в поведении: отказ от старых привычек, приобретение новых\n\n" +
+            "Отчет нужно присылать каждый день, ограничений в сутках по времени сдачи отчета нет.";
+
+public String getPetForm(){
+
+        return PET_FORM;
     }
 
     /**
