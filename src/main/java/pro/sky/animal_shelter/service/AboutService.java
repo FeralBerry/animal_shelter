@@ -12,6 +12,14 @@ import pro.sky.animal_shelter.model.AboutRepository;
 public class AboutService {
     @Autowired
     private AboutRepository aboutRepository;
+
+    /**
+     * 1. Создаёт экземпляр класса StringBuilder для формирования строки с информацией о данных объекта About.
+     * 2. Находит все объекты типа About с помощью метода findAll().
+     * 3. Если список объектов About пуст, то в строку добавляется сообщение «Описание пока отсутствует».
+     * 4. В противном случае происходит перебор всех найденных объектов и добавление их свойств в формируемую строку.
+     * 5. Возвращает сформированную строку как результат работы метода about().
+     */
     public String about(){
         StringBuilder message = new StringBuilder();
         var about = aboutRepository.findAll();

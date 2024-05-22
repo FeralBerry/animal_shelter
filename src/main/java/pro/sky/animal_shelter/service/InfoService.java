@@ -11,6 +11,14 @@ import pro.sky.animal_shelter.model.InfoRepository;
 public class InfoService {
     @Autowired
     private InfoRepository infoRepository;
+
+    /**
+     * 1. Создаёт экземпляр класса StringBuilder для формирования строки с информацией о данных объекта Info.
+     * 2. Находит все объекты типа Info с помощью метода findAll().
+     * 3. Если список объектов Info пуст, то в строку добавляется сообщение «Описание пока отсутствует».
+     * 4. В противном случае происходит перебор всех найденных объектов и добавление их свойств в формируемую строку.
+     * 5. Возвращает сформированную строку как результат работы метода info().
+     */
     public String info(){
         StringBuilder message = new StringBuilder();
         var info = infoRepository.findAll();
