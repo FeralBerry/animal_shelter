@@ -7,10 +7,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static io.restassured.RestAssured.given;
 @SpringBootTest
 public class UrlControllerTest {
-    private final String token = "807035350:AAHHsHwslk9_SKuqLLqpJbKuhQoOAipa12U";
+    /**
+     * Проверяем метод отправки сообщения телеграм ботом, если при отправке приходит http ответ с кодом 200,
+     * то тест пройден
+     */
     @Test
     void successSendMessage(){
-        RestAssured.baseURI = "https://api.telegram.org/bot" + token;
+        RestAssured.baseURI = "https://api.telegram.org/bot807035350:AAHHsHwslk9_SKuqLLqpJbKuhQoOAipa12U";
         given()
                 .param("text","test_message")
                 .param("chat_id","982721415")
@@ -19,4 +22,5 @@ public class UrlControllerTest {
                 .then()
                 .statusCode(200);
     }
+
 }

@@ -16,13 +16,32 @@ import java.util.List;
 @Slf4j
 @Service
 public class CreateButtonService {
+    /**
+     *
+     */
     private final PetRepository petRepository;
+    /**
+     *
+     */
     private final UserRepository userRepository;
+
+    /**
+     *
+     * @param petRepository
+     * @param userRepository
+     */
     public CreateButtonService(PetRepository petRepository,UserRepository userRepository){
         this.petRepository = petRepository;
         this.userRepository = userRepository;
     }
+
+    /**
+     *
+     */
     private final int COUNT_BUTTON_USER_ON_SCREEN = 2;
+    /**
+     *
+     */
     private final int COUNT_BUTTON_ADMIN_ON_SCREEN = 2;
 
     /**

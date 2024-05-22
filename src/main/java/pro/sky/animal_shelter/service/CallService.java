@@ -7,6 +7,8 @@ import pro.sky.animal_shelter.model.Call;
 import pro.sky.animal_shelter.model.CallRepository;
 import pro.sky.animal_shelter.model.User;
 import pro.sky.animal_shelter.model.UserRepository;
+
+import java.util.Date;
 import java.util.Random;
 
 import static pro.sky.animal_shelter.enums.UserSatausEnum.CALL_A_VOLUNTEER;
@@ -27,12 +29,10 @@ public class CallService {
         this.callRepository = callRepository;
         this.adminService = adminService;
     }
-
-
 /**
-     *
-     * @param chatId
-     * @return
+     * Создает чат между свободным администратором и пользователем
+     * @param chatId id пользователя, который хочет задать вопрос
+     * @return возвращает id свободного администратора для дальнейшего общения
      */
 
     public long createCall(long chatId){
@@ -53,18 +53,36 @@ public class CallService {
             userRepository.save(user);
             log.info("admin change status: " + user);
             Call call = new Call();
+            long nowSec = (new Date().getTime())/1000;
             call.setAdminChatId(random.getChatId());
             call.setUserChatId(chatId);
+            call.setUpdatedAt(nowSec);
             callRepository.save(call);
             log.info("created new call: " + call);
             return random.getChatId();
         }
     }
+
+    /**
+     * Метод определения id собеседника
+     * и обновляет время последнего сообщения чата
+     * @param chatId id отправившего сообщение
+     * @return возвращает id кому отправить сообщение
+     */
     public long sendMessageChat(long chatId){
+        long nowSec = (new Date().getTime())/1000;
+        Call call;
+        long sendChatId;
         if(adminService.checkAdmin(chatId)){
-            return callRepository.findByUserChatId(chatId).getUserChatId();
+            call = callRepository.findByUserChatId(chatId);
+            call.setUpdatedAt(nowSec);
+            sendChatId = callRepository.findByUserChatId(chatId).getUserChatId();
         } else {
-            return callRepository.findByAdminChatId(chatId).getAdminChatId();
+            call = callRepository.findByAdminChatId(chatId);
+            call.setUpdatedAt(nowSec);
+            sendChatId = callRepository.findByAdminChatId(chatId).getAdminChatId();
         }
+        callRepository.save(call);
+        return sendChatId;
     }
 }

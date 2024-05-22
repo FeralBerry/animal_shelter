@@ -24,6 +24,12 @@ public class AdminService {
         this.infoRepository = infoRepository;
         this.petRepository = petRepository;
     }
+
+    /**
+     * Проверка является ли пользователь администратором
+     * @param chatId принимает id пользователя
+     * @return возвращаем true, если пользователь администратор, false, если пользователь не является администратором
+     */
     public boolean checkAdmin(long chatId){
         var user = userRepository.findById(chatId);
         StringBuilder role = new StringBuilder();
@@ -34,6 +40,12 @@ public class AdminService {
         }
         return role.toString().equals("admin");
     }
+
+    /**
+     * Метод изменения статуса пользователя на администратора
+     * @param message получаем всю информацию о пользователе, что прислал сообщение,
+     *                и сохраняем пользователя с базу данных с новой ролью
+     */
     public void setRole(Message message){
         User user = new User();
         user.setChatId(message.getChatId());

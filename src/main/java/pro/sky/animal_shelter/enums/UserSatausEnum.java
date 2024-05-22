@@ -2,6 +2,7 @@ package pro.sky.animal_shelter.enums;
 
 public enum UserSatausEnum {
     NO_STATUS("null"),
+    ADD_PHONE("add_phone"),
     GET_PET_FORM("get_pet_form"),
     ADD_PET_REPORT_IMG("add_pet_report_img"),
     GET_CONTACT_INFORMATION("get_contact_information"),
