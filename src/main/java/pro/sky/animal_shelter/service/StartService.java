@@ -10,20 +10,22 @@ import pro.sky.animal_shelter.model.UserRepository;
 @Service
 public class StartService {
     /**
-     *
+     *Создаем поле userRepository для дальнейшей инициализации с помощью конструктора
+     *и записи в поле userRepository всех методов класса UserRepository
      */
     private final UserRepository userRepository;
 
     /**
-     *
-     * @param userRepository
+     * Конструктор класса StartService, в котиором инициализирууем поле (внедряем зависимость)
+     * @param userRepository для использования методов класса userRepository
      */
     public StartService(UserRepository userRepository){
         this.userRepository = userRepository;
     }
 
     /**
-     *
+     * Инициализируем строковую переменную с текстом для стартового сообщения, содержащего
+     * информацию о командах бота
      */
     private final String MESSAGE =      "- Узнать информацию о приюте /about\n" +
                                         "- Как взять животное из приюта /info\n" +
@@ -32,9 +34,10 @@ public class StartService {
                                         "- Если надо отправить отчет то просто ответьте боту";
 
     /**
-     *
-     * @param message
-     * @return
+     * Метод создаёт экземпляр класса User и инициализирует его поля chatId, firstName, lastName и userName
+     * данными, содержащимися в одноимённыз полях message. Сохраняет готовую сущность user в БД.
+     * @param message объект типа Message, переданный от метода start класса UrlController
+     * @return значение строковой переменной MESSAGE
      */
     public String start(Message message){
         // сохраняем или изменяем данные пользователя и сохраняем их в БД
