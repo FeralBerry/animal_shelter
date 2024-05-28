@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import pro.sky.animal_shelter.enums.AdminButtonMenuEnum;
+import pro.sky.animal_shelter.enums.PetButtonEnum;
 import pro.sky.animal_shelter.enums.UserButtonEnum;
 import pro.sky.animal_shelter.model.PetRepository;
 import pro.sky.animal_shelter.model.User;
@@ -141,13 +142,13 @@ public class CreateButtonService {
                 k = i + 1;
             }
         }
-        rowInLine.add(createButton("Назад","prev_pet"));
+        rowInLine.add(createButton(PetButtonEnum.PET_BUTTON_PREV.getText(), PetButtonEnum.PET_BUTTON_PREV.getCommand()));
         if(k == 0) {
             rowInLine.add(createButton("1/" + countPets ,""));
         } else {
             rowInLine.add(createButton(k + "/" + countPets,""));
         }
-        rowInLine.add(createButton("Вперед","next_pet"));
+        rowInLine.add(createButton(PetButtonEnum.PET_BUTTON_NEXT.getText(),PetButtonEnum.PET_BUTTON_NEXT.getCommand()));
         rowsInLine = List.of(rowInLine);
         return rowsInLine;
     }

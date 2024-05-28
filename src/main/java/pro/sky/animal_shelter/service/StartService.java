@@ -33,11 +33,11 @@ public class StartService {
 
     /**
      *
-     * @param message
-     * @return
      */
-    public String start(Message message){
-        // сохраняем или изменяем данные пользователя и сохраняем их в БД
+    public String start(){
+        return MESSAGE;
+    }
+    public void register(Message message){
         User user = new User();
         user.setChatId(message.getChatId());
         user.setFirstName(message.getChat().getFirstName());
@@ -45,6 +45,5 @@ public class StartService {
         user.setUserName(message.getChat().getUserName());
         userRepository.save(user);
         log.info("user saved: " + user);
-        return MESSAGE;
     }
 }

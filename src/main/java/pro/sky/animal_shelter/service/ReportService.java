@@ -8,9 +8,6 @@ import pro.sky.animal_shelter.model.ReportRepository;
 @Slf4j
 @Service
 public class ReportService {
-    /**
-     *
-     */
     private final ReportRepository reportRepository;
 
     /**

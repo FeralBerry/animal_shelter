@@ -9,15 +9,7 @@ import pro.sky.animal_shelter.model.UserRepository;
 @Slf4j
 @Service
 public class UserStatusService {
-    /**
-     *
-     */
     private final UserRepository userRepository;
-
-    /**
-     *
-     * @param userRepository
-     */
     public UserStatusService(UserRepository userRepository){
         this.userRepository = userRepository;
     }
@@ -36,6 +28,7 @@ public class UserStatusService {
                     user.setFirstName(i.getFirstName());
                     user.setLastName(i.getLastName());
                     user.setUserName(i.getUserName());
+                    user.setAddedPetId(i.getAddedPetId());
                     user.setLocationUserOnApp(newStatus);
                 });
         userRepository.save(user);

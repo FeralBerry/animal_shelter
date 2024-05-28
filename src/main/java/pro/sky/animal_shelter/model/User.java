@@ -15,6 +15,7 @@ public class User {
     private String role;
     private String locationUserOnApp;
     private long petId;
+    private long addedPetId;
     public Long getChatId() {
         return chatId;
     }
@@ -57,17 +58,26 @@ public class User {
     public void setPetId(long petId){
         this.petId = petId;
     }
+
+    public long getAddedPetId() {
+        return addedPetId;
+    }
+
+    public void setAddedPetId(long addedPetId) {
+        this.addedPetId = addedPetId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(chatId, user.chatId) && Objects.equals(firstName, user.firstName) && Objects.equals(lastName, user.lastName) && Objects.equals(userName, user.userName) && Objects.equals(role, user.role) && Objects.equals(locationUserOnApp, user.locationUserOnApp);
+        return petId == user.petId && addedPetId == user.addedPetId && Objects.equals(chatId, user.chatId) && Objects.equals(firstName, user.firstName) && Objects.equals(lastName, user.lastName) && Objects.equals(userName, user.userName) && Objects.equals(role, user.role) && Objects.equals(locationUserOnApp, user.locationUserOnApp);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(chatId, firstName, lastName, userName, role, locationUserOnApp);
+        return Objects.hash(chatId, firstName, lastName, userName, role, locationUserOnApp, petId, addedPetId);
     }
 
     @Override
@@ -79,6 +89,8 @@ public class User {
                 ", userName='" + userName + '\'' +
                 ", role='" + role + '\'' +
                 ", locationUserOnApp='" + locationUserOnApp + '\'' +
+                ", petId=" + petId +
+                ", addedPetId=" + addedPetId +
                 '}';
     }
 }
