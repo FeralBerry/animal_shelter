@@ -16,9 +16,8 @@ import pro.sky.animal_shelter.exeptions.NoSuchAboutException;
 import pro.sky.animal_shelter.exeptions.NoSuchInfoException;
 import pro.sky.animal_shelter.model.About;
 import pro.sky.animal_shelter.model.Info;
-import pro.sky.animal_shelter.service.AboutService;
-import pro.sky.animal_shelter.service.InfoService;
-import pro.sky.animal_shelter.service.StartService;
+import pro.sky.animal_shelter.service.*;
+
 @Tag(name = "Контроллер команд бота", description = "Обработка всех команд бота начинающихся с /")
 @RestController
 @RequestMapping("api/url")
@@ -26,11 +25,15 @@ public class BotCommandController {
     private final StartService startService;
     private final InfoService infoService;
     private final AboutService aboutService;
+    private final PetService petService;
+    private final ContactInformationService contactInformationService;
 
-    public BotCommandController(StartService startService, InfoService infoService, AboutService aboutService) {
+    public BotCommandController(StartService startService, InfoService infoService, AboutService aboutService, PetService petService, ContactInformationService contactInformationService) {
         this.startService = startService;
         this.infoService = infoService;
         this.aboutService = aboutService;
+        this.petService = petService;
+        this.contactInformationService = contactInformationService;
     }
 
     @Operation(summary = "Возвращает стартовое сообщение")
@@ -114,5 +117,57 @@ public class BotCommandController {
     public ResponseEntity<String> getAboutMessage() {
         String about = aboutService.about();
         return new ResponseEntity<>(about, HttpStatus.OK);
+    }
+    @Operation(summary = "Возвращает сообщение c формой отправки отчета")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Стартовое сообщение c формой отправки отчета найдено",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json"
+                            )
+                    }
+
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Стартовое сообщение c формой отправки отчета не найдено",
+                    content =
+                    @Content(
+                            mediaType = "application/json"
+                    )
+            )
+    })
+    @GetMapping("/pet-form")
+    public ResponseEntity<String> getPetFormMessage() {
+        String petForm = petService.getPetForm();
+        return new ResponseEntity<>(petForm, HttpStatus.OK);
+    }
+    @Operation(summary = "Возвращает сообщение c формой отправки контактной информации")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Стартовое сообщение c формой отправки контактной информации о приюте найдено",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json"
+                            )
+                    }
+
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Стартовое сообщение c формой отправки контактной информации не найдено",
+                    content =
+                    @Content(
+                            mediaType = "application/json"
+                    )
+            )
+    })
+    @GetMapping("/contact_information")
+    public ResponseEntity<String> getContactInformationMessage() {
+        String contactInformation = contactInformationService.getContactInformation();
+        return new ResponseEntity<>(contactInformation, HttpStatus.OK);
     }
 }

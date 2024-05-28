@@ -5,7 +5,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
@@ -20,7 +20,8 @@ import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import pro.sky.animal_shelter.model.Call;
-import pro.sky.animal_shelter.model.CallRepository;
+import pro.sky.animal_shelter.model.Repositories.CallRepository;
+import pro.sky.animal_shelter.service.ReportService;
 import pro.sky.animal_shelter.service.UserStatusService;
 
 import static pro.sky.animal_shelter.enums.BotCommandEnum.*;
@@ -31,7 +32,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-@Component
+@Controller
 @Slf4j
 public class TelegramBot extends TelegramLongPollingBot {
     @Value("${telegram.bot.token}")
@@ -41,10 +42,12 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final UpdateController updateController;
     private final CallRepository callRepository;
     private final UserStatusService userStatusService;
-    public TelegramBot(UpdateController updateController, CallRepository callRepository, UserStatusService userStatusService){
+    private final ReportService reportService;
+    public TelegramBot(UpdateController updateController, CallRepository callRepository, UserStatusService userStatusService, ReportService reportService){
         this.updateController = updateController;
         this.callRepository = callRepository;
         this.userStatusService = userStatusService;
+        this.reportService = reportService;
         List<BotCommand> botCommandList = new ArrayList<>();
         // добавление кнопок меню
         botCommandList.add(new BotCommand(START.toString(),"get welcome message"));
@@ -112,7 +115,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             }
         }
     }
-    public List<String> downloadPhotos(Update update){
+    public List<String> downloadPhotos(Update update, String url){
         GetFile getFile = new GetFile();
         List<PhotoSize> photos = update.getMessage().getPhoto();
         List<String> petPhotos = new ArrayList<>();
@@ -126,7 +129,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 for (int i = 0; i < petPhotos.size(); i++){
                     if((i + 1) % 3 == 0){
                         largePhotos.add(petPhotos.get(i));
-                        downloadFile(file, new java.io.File("src/main/resources/img/pets/" + photo.getFileId() + ".png"));
+                        downloadFile(file, new java.io.File( url + "/" + photo.getFileId() + ".png"));
                     }
                 }
 
@@ -158,6 +161,18 @@ public class TelegramBot extends TelegramLongPollingBot {
                 userStatusService.changeUserStatus(call.getAdminChatId(), NO_STATUS.getStatus());
                 message.setChatId(call.getAdminChatId());
                 message.setText("Чат с пользователем был закрыт");
+                sendAnswerMessage(message);
+            }
+        }
+    }
+    @Scheduled(cron = "0 0 21 * * *")
+    public void alarmReport(){
+        List<Long> chatIds = reportService.alarmReport();
+        if(!chatIds.isEmpty()){
+            for (Long chatId : chatIds){
+                SendMessage message = new SendMessage();
+                message.setChatId(chatId);
+                message.setText("Вы забыли про отчет по питомцу");
                 sendAnswerMessage(message);
             }
         }

@@ -3,6 +3,9 @@ package pro.sky.animal_shelter.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pro.sky.animal_shelter.model.*;
+import pro.sky.animal_shelter.model.Repositories.PetRepository;
+import pro.sky.animal_shelter.model.Repositories.PetsImgRepository;
+import pro.sky.animal_shelter.model.Repositories.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +37,7 @@ public class PetService {
             "- Изменения в поведении: отказ от старых привычек, приобретение новых\n\n" +
             "Отчет нужно присылать каждый день, ограничений в сутках по времени сдачи отчета нет.";
 
-public String getPetForm(){
-
+    public String getPetForm(){
         return PET_FORM;
     }
 
@@ -142,7 +144,6 @@ public String getPetForm(){
         for (PetsImg petsImg : petImages){
             images.add(petsImg.getFileId());
         }
-        System.out.println(images);
         return images;
     }
     public void addPetImages(long chatId,List<String> photos){

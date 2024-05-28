@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import pro.sky.animal_shelter.model.*;
+import pro.sky.animal_shelter.model.Repositories.*;
 
 import java.util.List;
 

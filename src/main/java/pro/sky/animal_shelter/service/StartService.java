@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import pro.sky.animal_shelter.model.User;
-import pro.sky.animal_shelter.model.UserRepository;
+import pro.sky.animal_shelter.model.Repositories.UserRepository;
 
 @Slf4j
 @Service
@@ -36,19 +36,23 @@ public class StartService {
     /**
      * Метод создаёт экземпляр класса User и инициализирует его поля chatId, firstName, lastName и userName
      * данными, содержащимися в одноимённыз полях message. Сохраняет готовую сущность user в БД.
-     * @param message объект типа Message, переданный от метода start класса UrlController
      * @return значение строковой переменной MESSAGE
      */
     public String start(){
         return MESSAGE;
     }
     public void register(Message message){
+        long chatId = message.getChatId();
         User user = new User();
-        user.setChatId(message.getChatId());
-        log.info(String.valueOf(message.getChatId()));
-        user.setFirstName(message.getChat().getFirstName());
-        user.setLastName(message.getChat().getLastName());
-        user.setUserName(message.getChat().getUserName());
+        if (userRepository.findById(chatId).isEmpty()){
+            user.setChatId(message.getChatId());
+            user.setFirstName(message.getChat().getFirstName());
+            user.setLastName(message.getChat().getLastName());
+            user.setUserName(message.getChat().getUserName());
+            user.setUserName(message.getChat().getUserName());
+        } else {
+            user = userRepository.findById(chatId).get();
+        }
         userRepository.save(user);
         log.info("user saved: " + user);
     }

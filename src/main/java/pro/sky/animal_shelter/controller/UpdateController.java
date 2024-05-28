@@ -1,7 +1,7 @@
 package pro.sky.animal_shelter.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -15,8 +15,9 @@ import java.util.List;
 import static pro.sky.animal_shelter.enums.AdminStatusEnum.PET_ADD_IMG;
 import static pro.sky.animal_shelter.enums.AdminStatusEnum.PET_ADD_NAME;
 import static pro.sky.animal_shelter.enums.BotCommandEnum.PET_LIST;
+import static pro.sky.animal_shelter.enums.UserSatausEnum.*;
 
-@Component
+@Controller
 @Slf4j
 public class UpdateController {
     private TelegramBot telegramBot;
@@ -27,7 +28,8 @@ public class UpdateController {
     private final UserStatusService userStatusService;
     private final ButtonService buttonService;
     private final PetService petService;
-    public UpdateController(MessageUtils messageUtils, UrlService urlService, TextService textService, AdminService adminService, UserStatusService userStatusService, ButtonService buttonService, PetService petService){
+    private final ReportService reportService;
+    public UpdateController(MessageUtils messageUtils, UrlService urlService, TextService textService, AdminService adminService, UserStatusService userStatusService, ButtonService buttonService, PetService petService, ReportService reportService){
         this.messageUtils = messageUtils;
         this.urlService = urlService;
         this.textService = textService;
@@ -35,6 +37,7 @@ public class UpdateController {
         this.userStatusService = userStatusService;
         this.buttonService = buttonService;
         this.petService = petService;
+        this.reportService = reportService;
     }
     public void registerBot(TelegramBot telegramBot){
         this.telegramBot = telegramBot;
@@ -89,9 +92,17 @@ public class UpdateController {
         long chatId = update.getMessage().getChatId();
         if (userStatusService.getUserStatus(chatId).equals(PET_ADD_NAME.getStatus()) ||
                 userStatusService.getUserStatus(chatId).equals(PET_ADD_IMG.getStatus())) {
-            List<String> photos = telegramBot.downloadPhotos(update);
+            List<String> photos = telegramBot.downloadPhotos(update,"src/main/resources/img/pets");
             adminService.addPetPhotos(update,photos);
             userStatusService.changeUserStatus(chatId,PET_ADD_IMG.getStatus());
+        } else if (userStatusService.getUserStatus(chatId).equals(ADD_PET_REPORT_IMG.getStatus())) {
+            List<String> photos = telegramBot.downloadPhotos(update,"src/main/resources/img/report/"+ chatId);
+            reportService.addImgReport(update,photos);
+            userStatusService.changeUserStatus(chatId,ADD_PET_REPORT_TEXT.getStatus());
+            setView(messageUtils.generateSendMessage(update,"Отлично фото уже есть осталось прислать:\n" +
+                    "- Рацион животного" +"\n" +
+                    "- Общее самочувствие и привыкание к новому месту" +"\n" +
+                    "- Изменения в поведении: отказ от старых привычек, приобретение новых"));
         }
     }
 
