@@ -1,9 +1,9 @@
 package pro.sky.animal_shelter.controller;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import pro.sky.animal_shelter.service.CallService;
 
-@Service
+@Component
 public class CallController {
     /**
      * Создаем поле callService для дальнейшей инициализации с помощью конструктора

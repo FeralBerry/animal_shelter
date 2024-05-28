@@ -3,6 +3,7 @@ package pro.sky.animal_shelter.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.objects.Update;
 import pro.sky.animal_shelter.model.Call;
 import pro.sky.animal_shelter.model.CallRepository;
 import pro.sky.animal_shelter.model.User;
@@ -31,15 +32,16 @@ public class CallService {
     }
 /**
      * Создает чат между свободным администратором и пользователем
-     * @param chatId id пользователя, который хочет задать вопрос
+     * @param update объект пользователя, который хочет задать вопрос
      * @return возвращает id свободного администратора для дальнейшего общения
      */
 
-    public long createCall(long chatId){
+    public Long createCall(Update update){
         Random randomizer = new Random();
+        long chatId = update.getMessage().getChatId();
         if(userRepository.findAllAdmin().isEmpty()){
             userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
-            return 0;
+            return null;
         } else {
             userStatusService.changeUserStatus(chatId, CALL_A_VOLUNTEER.getStatus());
             User random = userRepository.findAllAdmin().get(randomizer.nextInt(userRepository.findAllAdmin().size()));

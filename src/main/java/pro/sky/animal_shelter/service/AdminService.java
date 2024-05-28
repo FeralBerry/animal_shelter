@@ -3,7 +3,11 @@ package pro.sky.animal_shelter.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.Update;
 import pro.sky.animal_shelter.model.*;
+
+import java.util.List;
+
 
 @Slf4j
 @Service
@@ -13,16 +17,20 @@ public class AdminService {
     private final ContactInformationRepository contactInformationRepository;
     private final InfoRepository infoRepository;
     private final PetRepository petRepository;
+    private final PetService petService;
+    private final UserStatusService userStatusService;
     public AdminService(UserRepository userRepository,
                         AboutRepository aboutRepository,
                         ContactInformationRepository contactInformationRepository,
                         InfoRepository infoRepository,
-                        PetRepository petRepository){
+                        PetRepository petRepository, PetService petService, UserStatusService userStatusService){
         this.userRepository = userRepository;
         this.aboutRepository = aboutRepository;
         this.contactInformationRepository = contactInformationRepository;
         this.infoRepository = infoRepository;
         this.petRepository = petRepository;
+        this.petService = petService;
+        this.userStatusService = userStatusService;
     }
 
     /**
@@ -55,5 +63,9 @@ public class AdminService {
         user.setRole("admin");
         userRepository.save(user);
         log.info("user saved: " + user);
+    }
+    public void addPetPhotos(Update update, List<String> petPhotos){
+        long chatId = update.getMessage().getChatId();
+        petService.addPetImages(chatId,petPhotos);
     }
 }

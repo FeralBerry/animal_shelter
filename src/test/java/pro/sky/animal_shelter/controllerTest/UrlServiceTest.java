@@ -6,7 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static io.restassured.RestAssured.given;
 @SpringBootTest
-public class UrlControllerTest {
+public class UrlServiceTest {
     /**
      * Проверяем метод отправки сообщения телеграм ботом, если при отправке приходит http ответ с кодом 200,
      * то тест пройден

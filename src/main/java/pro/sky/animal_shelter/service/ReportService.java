@@ -8,10 +8,6 @@ import pro.sky.animal_shelter.model.ReportRepository;
 @Slf4j
 @Service
 public class ReportService {
-    /**
-     * Создаём поле reportRepository для дальнейшего внедрения зависимости и использования
-     * методов класса ReportRepository
-     */
     private final ReportRepository reportRepository;
 
     /**
