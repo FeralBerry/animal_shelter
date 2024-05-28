@@ -26,10 +26,10 @@ import pro.sky.animal_shelter.service.UserStatusService;
 import static pro.sky.animal_shelter.enums.BotCommandEnum.*;
 import static pro.sky.animal_shelter.enums.UserSatausEnum.*;
 
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 
 @Component
 @Slf4j
