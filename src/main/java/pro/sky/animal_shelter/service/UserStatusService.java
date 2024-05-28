@@ -3,7 +3,7 @@ package pro.sky.animal_shelter.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pro.sky.animal_shelter.model.User;
-import pro.sky.animal_shelter.model.UserRepository;
+import pro.sky.animal_shelter.model.Repositories.UserRepository;
 
 
 @Slf4j

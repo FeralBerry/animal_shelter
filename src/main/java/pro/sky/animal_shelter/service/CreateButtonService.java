@@ -6,9 +6,9 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import pro.sky.animal_shelter.enums.AdminButtonMenuEnum;
 import pro.sky.animal_shelter.enums.PetButtonEnum;
 import pro.sky.animal_shelter.enums.UserButtonEnum;
-import pro.sky.animal_shelter.model.PetRepository;
+import pro.sky.animal_shelter.model.Repositories.PetRepository;
 import pro.sky.animal_shelter.model.User;
-import pro.sky.animal_shelter.model.UserRepository;
+import pro.sky.animal_shelter.model.Repositories.UserRepository;
 
 
 import java.util.ArrayList;

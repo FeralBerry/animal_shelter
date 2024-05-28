@@ -22,11 +22,13 @@ public class TextService {
     private final CallController callController;
     private final UrlService urlService;
     private final PetService petService;
+    private final AboutService aboutService;
+    private final InfoService infoService;
     private final ReportService reportService;
     @Value("${telegram.bot.token}")
     private String token;
 
-    public TextService(MessageUtils messageUtils, AdminService adminService, UserStatusService userStatusService, ContactInformationService contactInformationService, CallController callController, UrlService urlService, PetService petService, ReportService reportService) {
+    public TextService(MessageUtils messageUtils, AdminService adminService, UserStatusService userStatusService, ContactInformationService contactInformationService, CallController callController, UrlService urlService, PetService petService, AboutService aboutService, InfoService infoService, ReportService reportService) {
         this.messageUtils = messageUtils;
         this.adminService = adminService;
         this.userStatusService = userStatusService;
@@ -34,6 +36,8 @@ public class TextService {
         this.callController = callController;
         this.urlService = urlService;
         this.petService = petService;
+        this.aboutService = aboutService;
+        this.infoService = infoService;
         this.reportService = reportService;
     }
 
@@ -59,6 +63,7 @@ public class TextService {
         String message = update.getMessage().getText();
         long chatId = update.getMessage().getChatId();
         List<SendMessage> sendMessageList = new ArrayList<>();
+        var sendMessage = new SendMessage();
         if(userStatusService.getUserStatus(chatId).equals(VIEW_CONTACT_INFORMATION.getStatus())){
             if (isNumeric(message)) {
                 sendMessageList.add(messageUtils.generateSendMessage(update,contactInformationService.deleteContactInformationById(Long.parseLong(message))));
@@ -69,24 +74,57 @@ public class TextService {
                 sendMessageList.add(messageUtils.generateSendButton(chatId,"Ввели не id или не число.\nДля удаления обратной связи введите ее id, для перехода ко всем командам exit или нажмите /start"));
             }
         } else if (userStatusService.getUserStatus(chatId).equals(CALL.getStatus())) {
-            var sendMessage = new SendMessage();
             sendMessage.setChatId(callController.sendMessageToChat(chatId));
             sendMessage.setText(message);
             sendMessageList.add(sendMessage);
             sendMessageList.add(messageUtils.generateSendButton(urlService.callVolunteer(update), "Закончить разговор"));
         } else if (userStatusService.getUserStatus(chatId).equals(PET_ADD.getStatus())) {
             petService.addPetName(chatId,message);
-            var sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
             sendMessage.setText("Загрузите изображение и потом добавьте описание животного");
             sendMessageList.add(sendMessage);
         } else if (userStatusService.getUserStatus(chatId).equals(PET_ADD_IMG.getStatus())) {
             petService.addPetDescription(chatId,message);
-            var sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
             sendMessage.setText("Успешно сохранен новый питомец");
             sendMessageList.add(sendMessage);
             sendMessageList.add(messageUtils.generateSendButton(chatId, "Главное меню администратора."));
+            userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
+        } else if (userStatusService.getUserStatus(chatId).equals(ADD_ABOUT_SHELTER_NAME.getStatus())) {
+            aboutService.addShelterName(message);
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Название приюта сохранено. Введите график работы приюта.");
+            sendMessageList.add(sendMessage);
+            userStatusService.changeUserStatus(chatId,ADD_ABOUT_SCHEDULE.getStatus());
+        } else if (userStatusService.getUserStatus(chatId).equals(ADD_ABOUT_SCHEDULE.getStatus())) {
+            aboutService.addSchedule(message);
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("График работы приюта сохранен. Введите контакты охраны.");
+            sendMessageList.add(sendMessage);
+            userStatusService.changeUserStatus(chatId,ADD_ABOUT_SECURITY_CONTACTS.getStatus());
+        } else if (userStatusService.getUserStatus(chatId).equals(ADD_ABOUT_SECURITY_CONTACTS.getStatus())) {
+            aboutService.addSecurityContacts(message);
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Контакты охраны успешно сохранены");
+            sendMessageList.add(sendMessage);
+            userStatusService.changeUserStatus(chatId,NO_STATUS.getStatus());
+        } else if (userStatusService.getUserStatus(chatId).equals(ADD_INFO_RULES.getStatus())) {
+            infoService.addRules(message);
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Контакты успешно сохранены. Добавьте описание какие документы нужны.");
+            sendMessageList.add(sendMessage);
+            userStatusService.changeUserStatus(chatId,ADD_INFO_DOCUMENTS.getStatus());
+        } else if (userStatusService.getUserStatus(chatId).equals(ADD_INFO_DOCUMENTS.getStatus())) {
+            infoService.addDocuments(message);
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Список документов успешно сохранен. Добавьте описание как можно транспортировать животное.");
+            sendMessageList.add(sendMessage);
+            userStatusService.changeUserStatus(chatId,ADD_INFO_TRANSPORTATION.getStatus());
+        } else if (userStatusService.getUserStatus(chatId).equals(ADD_INFO_TRANSPORTATION.getStatus())) {
+            infoService.addTransportation(message);
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Как транспортировать животное успешно сохранено");
+            sendMessageList.add(sendMessage);
             userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
         } else {
             sendMessageList.add(messageUtils.generateSendButton(chatId, "Главное меню администратора."));
@@ -100,14 +138,8 @@ public class TextService {
         if (userStatusService.getUserStatus(chatId).equals(NO_STATUS.getStatus())) {
             sendMessageList.add(messageUtils.generateSendButton(chatId, "Для чего вы отправили это сообщение?"));
         } else if (userStatusService.getUserStatus(chatId).equals(GET_PET_FORM.getStatus())) {
-            /*// реакция на текстовое сообщение боту если пользователь в статусе получить форму отчета по питомцу
-            if (reportService.addImgReport(update.getMessage())) {
-                // статус изображение отчета отправлено
-                userStatusService.changeUserStatus(chatId, ADD_PET_REPORT_IMG.getStatus());
-                sendMessage(chatId, "Отлично! Осталось только, написать о состоянии животного.");
-            } else {
-                sendMessage(chatId, "Первым сообщением отчета нужно отсылать фото.");
-            }*/
+            sendMessageList.add(messageUtils.generateSendMessage(update,petService.getPetForm()));
+            userStatusService.changeUserStatus(chatId, ADD_PET_REPORT_IMG.getStatus());
         } else if (userStatusService.getUserStatus(chatId).equals(GET_CONTACT_INFORMATION.getStatus())) {
             if (contactInformationService.addContactPhone(message,chatId)) {
                 userStatusService.changeUserStatus(chatId, ADD_PHONE.getStatus());
@@ -122,14 +154,9 @@ public class TextService {
             } else  {
                 sendMessageList.add(messageUtils.generateSendMessage(update,"Не корректно введены данные.\n" + contactInformationService.getContactInformation()));
             }
-        } else if (userStatusService.getUserStatus(chatId).equals(ADD_PET_REPORT_IMG.getStatus())) {
-            /*if (reportService.addTextReport(update.getMessage())) {
-                // статус изображение отчета отправлено
-                userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
-                sendMessage(chatId, "Супер! Сегодня ежедневный отчет сдан");
-            } else {
-                sendMessage(chatId, "Вторым сообщением отчета нужно отсылать описание состояния животного.");
-            }*/
+        } else if (userStatusService.getUserStatus(chatId).equals(ADD_PET_REPORT_TEXT.getStatus())) {
+            reportService.addTextReport(update);
+            userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
         } else if (userStatusService.getUserStatus(chatId).equals(CALL_A_VOLUNTEER.getStatus())) {
             var sendMessage = new SendMessage();
             sendMessage.setChatId(callController.sendMessageToChat(chatId));

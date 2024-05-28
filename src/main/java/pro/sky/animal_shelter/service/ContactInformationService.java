@@ -3,7 +3,7 @@ package pro.sky.animal_shelter.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pro.sky.animal_shelter.model.ContactInformation;
-import pro.sky.animal_shelter.model.ContactInformationRepository;
+import pro.sky.animal_shelter.model.Repositories.ContactInformationRepository;
 
 import java.util.List;
 import java.util.regex.Matcher;

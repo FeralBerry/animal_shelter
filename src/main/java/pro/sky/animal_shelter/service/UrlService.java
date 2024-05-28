@@ -53,12 +53,13 @@ public class UrlService {
         String backMsg =  "Если хотите чтобы с Вами связались нажмите на ссылку или выберете пункт в меню /contact_information \n" +
                 "Если хотите связаться с волонтером нажмите на ссылку или выберете пункт в меню /to_call_a_volunteer";
         if (message.equals(START.toString())) {
-            String msg = startService.start();
             startService.register(update.getMessage());
             if (adminService.checkAdmin(chatId)) {
+                String msg = "Главное меню администратора";
                 userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
                 list.add(messageUtils.generateSendButton(chatId,msg));
             } else {
+                String msg = startService.start();
                 list.add(messageUtils.generateSendMessage(update,helloMsg.append(msg).toString()));
                 userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
             }

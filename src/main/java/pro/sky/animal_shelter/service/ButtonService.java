@@ -6,7 +6,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import pro.sky.animal_shelter.model.ContactInformation;
 import pro.sky.animal_shelter.model.Pet;
 import pro.sky.animal_shelter.model.PetsImg;
-import pro.sky.animal_shelter.model.PetsImgRepository;
+import pro.sky.animal_shelter.model.Repositories.PetsImgRepository;
 import pro.sky.animal_shelter.utils.MessageUtils;
 
 import java.util.ArrayList;
@@ -66,6 +66,18 @@ public class ButtonService {
             var sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
             sendMessage.setText("Введите имя питомца.");
+            sendMessageList.add(sendMessage);
+        } else if (callBackData.equals(ADD_ABOUT.getCommand())){
+            userStatusService.changeUserStatus(chatId,ADD_ABOUT_SHELTER_NAME.getStatus());
+            var sendMessage = new SendMessage();
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Введите название приюта.");
+            sendMessageList.add(sendMessage);
+        } else if (callBackData.equals(ADD_INFO.getCommand())){
+            userStatusService.changeUserStatus(chatId,ADD_INFO_RULES.getStatus());
+            var sendMessage = new SendMessage();
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Введите правила как забрать животное из приюта.");
             sendMessageList.add(sendMessage);
         }
         return sendMessageList;
