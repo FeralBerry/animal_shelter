@@ -43,6 +43,7 @@ public class StartService {
         // сохраняем или изменяем данные пользователя и сохраняем их в БД
         User user = new User();
         user.setChatId(message.getChatId());
+        log.info(String.valueOf(message.getChatId()));
         user.setFirstName(message.getChat().getFirstName());
         user.setLastName(message.getChat().getLastName());
         user.setUserName(message.getChat().getUserName());

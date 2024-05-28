@@ -22,6 +22,7 @@ import pro.sky.animal_shelter.model.Call;
 import pro.sky.animal_shelter.model.CallRepository;
 import pro.sky.animal_shelter.model.ContactInformation;
 import pro.sky.animal_shelter.model.Pet;
+
 import pro.sky.animal_shelter.service.*;
 
 import java.io.ByteArrayInputStream;
@@ -32,9 +33,12 @@ import java.util.List;
 
 import static pro.sky.animal_shelter.enums.AdminStatusEnum.*;
 import static pro.sky.animal_shelter.enums.AdminButtonMenuEnum.*;
+
 import static pro.sky.animal_shelter.enums.UserButtonEnum.*;
 import static pro.sky.animal_shelter.enums.UserSatausEnum.*;
 import static pro.sky.animal_shelter.enums.BotCommandEnum.*;
+import static pro.sky.animal_shelter.enums.UserButtonEnum.*;
+import static pro.sky.animal_shelter.enums.UserSatausEnum.*;
 
 // Slf4j - аннотация для использования логов из библиотеки lombok и авто подключения сервисов в конструктор
 @Slf4j
@@ -274,6 +278,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                             sendButton(chatId, adminService.checkAdmin(chatId), "Главное меню администратора.");
                         }
                     }
+                    // реакция бота на текстовое сообщение от администратора
+                    sendButton(chatId, adminService.checkAdmin(chatId), "Главное меню администратора.");
                 } else {
                     // отслеживание статуса пользователя и реагируем на текстовое сообщение
                     if (userStatusService.getUserStatus(chatId).equals(NO_STATUS.getStatus())) {
