@@ -34,8 +34,7 @@ public class PetService {
             "- Изменения в поведении: отказ от старых привычек, приобретение новых\n\n" +
             "Отчет нужно присылать каждый день, ограничений в сутках по времени сдачи отчета нет.";
 
-public String getPetForm(){
-
+    public String getPetForm(){
         return PET_FORM;
     }
 
