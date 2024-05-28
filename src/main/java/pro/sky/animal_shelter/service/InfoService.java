@@ -9,8 +9,6 @@ import pro.sky.animal_shelter.model.InfoRepository;
 @Slf4j
 @Service
 public class InfoService {
-    @Autowired
-    private InfoRepository infoRepository;
 
     /**
      * 1. Создаёт экземпляр класса StringBuilder для формирования строки с информацией о данных объекта Info.

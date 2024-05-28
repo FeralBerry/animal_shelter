@@ -1,7 +1,7 @@
 package pro.sky.animal_shelter.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -16,7 +16,7 @@ import static pro.sky.animal_shelter.enums.AdminStatusEnum.PET_ADD_IMG;
 import static pro.sky.animal_shelter.enums.AdminStatusEnum.PET_ADD_NAME;
 import static pro.sky.animal_shelter.enums.BotCommandEnum.PET_LIST;
 
-@Component
+@Controller
 @Slf4j
 public class UpdateController {
     private TelegramBot telegramBot;
