@@ -69,6 +69,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     public void init(){
         updateController.registerBot(this);
         adminReportController.registerBot(this);
+        reportService.registerBot(this);
     }
     @Override
     public String getBotUsername(){
