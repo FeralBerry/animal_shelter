@@ -27,7 +27,7 @@ public class StartService {
      * Инициализируем строковую переменную с текстом для стартового сообщения, содержащего
      * информацию о командах бота
      */
-    private final String MESSAGE =      "- Узнать информацию о приюте /about\n" +
+    private final static String MESSAGE =      "- Узнать информацию о приюте /about\n" +
                                         "- Как взять животное из приюта /info\n" +
                                         "- Просмотреть форму отчета /pet_report_form\n" +
                                         "- Позвать волонтера /to_call_a_volunteer\n" +

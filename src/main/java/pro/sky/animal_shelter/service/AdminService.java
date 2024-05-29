@@ -4,8 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import pro.sky.animal_shelter.model.*;
-import pro.sky.animal_shelter.model.Repositories.*;
+import pro.sky.animal_shelter.model.Repositories.UserRepository;
+import pro.sky.animal_shelter.model.User;
 
 import java.util.List;
 
@@ -14,24 +14,11 @@ import java.util.List;
 @Service
 public class AdminService {
     private final UserRepository userRepository;
-    private final AboutRepository aboutRepository;
-    private final ContactInformationRepository contactInformationRepository;
-    private final InfoRepository infoRepository;
-    private final PetRepository petRepository;
     private final PetService petService;
-    private final UserStatusService userStatusService;
     public AdminService(UserRepository userRepository,
-                        AboutRepository aboutRepository,
-                        ContactInformationRepository contactInformationRepository,
-                        InfoRepository infoRepository,
-                        PetRepository petRepository, PetService petService, UserStatusService userStatusService){
+                        PetService petService){
         this.userRepository = userRepository;
-        this.aboutRepository = aboutRepository;
-        this.contactInformationRepository = contactInformationRepository;
-        this.infoRepository = infoRepository;
-        this.petRepository = petRepository;
         this.petService = petService;
-        this.userStatusService = userStatusService;
     }
 
     /**

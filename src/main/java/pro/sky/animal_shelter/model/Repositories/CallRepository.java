@@ -11,6 +11,6 @@ public interface CallRepository extends JpaRepository<Call, Long> {
     Call findByAdminChatId(long adminChatId);
     @Query(value = "SELECT * FROM calls WHERE userChatId = :userChatId", nativeQuery = true)
     Call findByUserChatId(long userChatId);
-    @Query(value = "SELECT * FROM calls WHERE updatedAt < :updatedAt", nativeQuery = true)
+    @Query(value = "SELECT * FROM calls WHERE updated_at < :updatedAt", nativeQuery = true)
     List<Call> findByChatUpdatedBefore(long updatedAt);
 }
