@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 @Slf4j
 @Service
 public class ContactInformationService {
-    private final String MESSAGE= "Введите номер телефона в формате: +7-9**-***-**-**";
+    private final static String MESSAGE= "Введите номер телефона в формате: +7-9**-***-**-**";
     private final ContactInformationRepository contactInformationRepository;
     public ContactInformationService(ContactInformationRepository contactInformationRepository){
         this.contactInformationRepository = contactInformationRepository;

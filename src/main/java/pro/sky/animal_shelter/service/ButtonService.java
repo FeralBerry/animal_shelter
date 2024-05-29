@@ -5,7 +5,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import pro.sky.animal_shelter.model.ContactInformation;
 import pro.sky.animal_shelter.model.Pet;
-import pro.sky.animal_shelter.model.PetsImg;
 import pro.sky.animal_shelter.model.Repositories.PetsImgRepository;
 import pro.sky.animal_shelter.utils.MessageUtils;
 
@@ -25,15 +24,13 @@ public class ButtonService {
     private final UserStatusService userStatusService;
     private final PetService petService;
     private final MessageUtils messageUtils;
-    private final PetsImgRepository petsImgRepository;
 
-    public ButtonService(AdminService adminService, ContactInformationService contactInformationService, UserStatusService userStatusService, PetService petService, MessageUtils messageUtils, PetsImgRepository petsImgRepository) {
+    public ButtonService(AdminService adminService, ContactInformationService contactInformationService, UserStatusService userStatusService, PetService petService, MessageUtils messageUtils) {
         this.adminService = adminService;
         this.contactInformationService = contactInformationService;
         this.userStatusService = userStatusService;
         this.petService = petService;
         this.messageUtils = messageUtils;
-        this.petsImgRepository = petsImgRepository;
     }
 
     public List<SendMessage> defineCommand(Update update){
@@ -79,13 +76,31 @@ public class ButtonService {
             sendMessage.setChatId(chatId);
             sendMessage.setText("Введите правила как забрать животное из приюта.");
             sendMessageList.add(sendMessage);
+        } else if(callBackData.equals(PET_BUTTON_PREV.getCommand())) {
+            SendMessage sendMessage;
+            Pet petView = petService.getPet(chatId);
+            String description = petView.getDescription();
+            String petName = petView.getPetName();
+            sendMessage = messageUtils.generateSendButton(chatId,"");
+            sendMessage.setChatId(chatId);
+            sendMessage.setText(petName + "\n" + description);
+            sendMessageList.add(sendMessage);
+        } else if(callBackData.equals(PET_BUTTON_NEXT.getCommand())) {
+            SendMessage sendMessage;
+            Pet petView = petService.getPet(chatId);
+            String description = petView.getDescription();
+            String petName = petView.getPetName();
+            sendMessage = messageUtils.generateSendButton(chatId,"");
+            sendMessage.setChatId(chatId);
+            sendMessage.setText(petName + "\n" + description);
+            sendMessageList.add(sendMessage);
         }
         return sendMessageList;
     }
-    private List ifUser(Update update){
+    private List<SendMessage> ifUser(Update update){
         String callBackData = update.getCallbackQuery().getData();
         long chatId = update.getCallbackQuery().getFrom().getId();
-        List sendMessageList = new ArrayList<>();
+        List<SendMessage> sendMessageList = new ArrayList<>();
         // реакции на кнопки пользователя
         if(callBackData.equals(PET_REPORT.getCommand())){
             // переключить статус пользователя
@@ -98,52 +113,24 @@ public class ButtonService {
             userStatusService.changeUserStatus(chatId, GET_CONTACT_INFORMATION.getStatus());
             // присылает в каком виде надо отсылать контактную информацию
             sendMessageList.add(messageUtils.generateSendMessage(update, contactInformationService.getContactInformation()));
-        } else if(callBackData.equals(VIEW_PETS.getCommand())) {
-            userStatusService.changeUserStatus(chatId, VIEW_PET_LIST.getStatus());
-            Pet petView = petService.getPet(chatId);
-            String description = petView.getDescription();// пока для теста выдает только имя питомца
-            List<PetsImg> petImages = petsImgRepository.findPetsImgByPetId(petView.getId());
-            List<String> images = new ArrayList<>();
-            for (PetsImg petsImg : petImages){
-                images.add(petsImg.getFileId());
-            }
-            if (images.size() > 1){
-                sendMessageList.add(messageUtils.sendMediaGroup(chatId,images));
-            } else {
-                sendMessageList.add(messageUtils.sendPhoto(chatId,images.get(0)));
-            }
-            var sendButton = messageUtils.generateSendButton(chatId,"");
-            sendMessageList.add(sendButton);
         } else if(callBackData.equals(PET_BUTTON_PREV.getCommand())) {
-            Pet petView = petService.getPrevPet(chatId);
-            String description = petView.getPetName();// пока для теста выдает только имя питомца
-            List<PetsImg> petImages = petsImgRepository.findPetsImgByPetId(petView.getId());
-            List<String> images = new ArrayList<>();
-            for (PetsImg petsImg : petImages){
-                images.add(petsImg.getFileId());
-            }
-            if (images.size() > 1){
-                sendMessageList.add(messageUtils.sendMediaGroup(chatId,images));
-            } else {
-                sendMessageList.add(messageUtils.sendPhoto(chatId,images.get(0)));
-            }
-            var sendButton = messageUtils.generateSendButton(chatId,"");
-            sendMessageList.add(sendButton);
+            SendMessage sendMessage;
+            Pet petView = petService.getPet(chatId);
+            String description = petView.getDescription();
+            String petName = petView.getPetName();
+            sendMessage = messageUtils.generateSendButton(chatId,"");
+            sendMessage.setChatId(chatId);
+            sendMessage.setText(petName + "\n" + description);
+            sendMessageList.add(sendMessage);
         } else if(callBackData.equals(PET_BUTTON_NEXT.getCommand())) {
-            Pet petView = petService.getNextPet(chatId);
-            String description = petView.getPetName();// пока для теста выдает только имя питомца
-            List<PetsImg> petImages = petsImgRepository.findPetsImgByPetId(petView.getId());
-            List<String> images = new ArrayList<>();
-            for (PetsImg petsImg : petImages){
-                images.add(petsImg.getFileId());
-            }
-            if (images.size() > 1){
-                sendMessageList.add(messageUtils.sendMediaGroup(chatId,images));
-            } else {
-                sendMessageList.add(messageUtils.sendPhoto(chatId,images.get(0)));
-            }
-            var sendButton = messageUtils.generateSendButton(chatId,"");
-            sendMessageList.add(sendButton);
+            SendMessage sendMessage;
+            Pet petView = petService.getPet(chatId);
+            String description = petView.getDescription();
+            String petName = petView.getPetName();
+            sendMessage = messageUtils.generateSendButton(chatId,"");
+            sendMessage.setChatId(chatId);
+            sendMessage.setText(petName + "\n" + description);
+            sendMessageList.add(sendMessage);
         }
         return sendMessageList;
     }

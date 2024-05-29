@@ -69,12 +69,14 @@ public class MessageUtils {
                 markupInLine.setKeyboard(createButtonService.createButtonToMainMenuAdmin());
             } else if(userStatusService.getUserStatus(chatId).equals(CALL.getStatus())){
                 markupInLine.setKeyboard(createButtonService.callToUser(text));
+            } else if (userStatusService.getUserStatus(chatId).equals(VIEW_PET_LIST.getStatus())){
+                markupInLine.setKeyboard(createButtonService.createButtonToViewPetList());
             }
         } else {
             if(userStatusService.getUserStatus(chatId).equals(NO_STATUS.getStatus())){
                 markupInLine.setKeyboard(createButtonService.createButtonToUser());
             } else if (userStatusService.getUserStatus(chatId).equals(VIEW_PET_LIST.getStatus())){
-                markupInLine.setKeyboard(createButtonService.createButtonToViewPetList(chatId));
+                markupInLine.setKeyboard(createButtonService.createButtonToViewPetList());
             }
         }
         message.setReplyMarkup(markupInLine);

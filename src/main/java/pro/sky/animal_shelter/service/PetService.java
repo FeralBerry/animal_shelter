@@ -18,19 +18,16 @@ public class PetService {
     private final PetRepository petRepository;
     private final PetsImgRepository petsImgRepository;
     private final UserRepository userRepository;
-    private final UserStatusService userStatusService;
 
     public PetService(PetRepository petRepository,
                       PetsImgRepository petsImgRepository,
-                      UserRepository userRepository,
-                      UserStatusService userStatusService){
+                      UserRepository userRepository){
         this.petRepository = petRepository;
         this.petsImgRepository = petsImgRepository;
         this.userRepository = userRepository;
-        this.userStatusService = userStatusService;
     }
 
-    private static String PET_FORM = "В ежедневный отчет входит следующая информация:\n" +
+    private static final String PET_FORM = "В ежедневный отчет входит следующая информация:\n" +
             "- Фото животного\n" +
             "- Рацион животного\n" +
             "- Общее самочувствие и привыкание к новому месту\n" +
@@ -55,8 +52,12 @@ public class PetService {
      * @return
      */
     public Pet getPet(long chatId){
-        User newUser = getUserInfo(chatId);
+        User newUser = userRepository.findById(chatId).get();
         long lastViewPetId = newUser.getPetId();
+        return checkPet(lastViewPetId,newUser);
+    }
+
+    private Pet checkPet(long lastViewPetId, User newUser) {
         if(getPets().isEmpty()){
             return null;
         } else {
@@ -71,44 +72,7 @@ public class PetService {
             }
         }
     }
-    public Pet getNextPet(long chatId){
-        User newUser = getUserInfo(chatId);
-        long lastViewPetId = newUser.getPetId();
-        if(petRepository.findNextPet(lastViewPetId).getId() > 0){
-            newUser.setPetId(petRepository.findNextPet(lastViewPetId).getId());
-            userRepository.save(newUser);
-            return petRepository.findNextPet(lastViewPetId);
-        } else {
-            newUser.setPetId(petRepository.findIdFirstPet());
-            userRepository.save(newUser);
-            return petRepository.findById(petRepository.findIdFirstPet()).get();
-        }
-    }
-    public Pet getPrevPet(long chatId){
-        User newUser = getUserInfo(chatId);
-        long lastViewPetId = newUser.getPetId();
-        if(petRepository.findPrevPet(lastViewPetId).getId() <= 0){
-            newUser.setPetId(petRepository.findPrevPet(lastViewPetId).getId());
-            userRepository.save(newUser);
-            return petRepository.findPrevPet(lastViewPetId);
-        } else {
-            newUser.setPetId(petRepository.findIdLastPet());
-            userRepository.save(newUser);
-            return petRepository.findById(petRepository.findIdLastPet()).get();
-        }
-    }
-    private User getUserInfo(long chatId){
-        var user = userRepository.findById(chatId).stream().toList();
-        User newUser = new User();
-        for (User user1 : user) {
-            newUser.setChatId(user1.getChatId());
-            newUser.setFirstName(user1.getFirstName());
-            newUser.setLastName(user1.getLastName());
-            newUser.setRole(user1.getRole());
-            newUser.setUserName(user1.getUserName());
-        }
-        return newUser;
-    }
+
 
     /**
      * Метод создает нового питомца и переключает статус пользователя для добавления изображения,
@@ -134,17 +98,36 @@ public class PetService {
         userRepository.save(user);
     }
     public List<String> getPetImages(long chatId){
-        User user = new User();
-        if(userRepository.findById(chatId).isPresent()){
-            user = userRepository.findById(chatId).get();
-        }
-        long petId = user.getPetId();
-        List<PetsImg> petImages = petsImgRepository.findPetsImgByPetId(petId);
+        List<PetsImg> petImages = petsImgRepository.findPetsImgByPetId(getPet(chatId).getId());
         List<String> images = new ArrayList<>();
         for (PetsImg petsImg : petImages){
             images.add(petsImg.getFileId());
         }
         return images;
+    }
+    public void changeNextPetView(long chatId){
+        User user = userRepository.findById(chatId).get();
+        long lastViewPetId = user.getPetId();
+        long lastPetId = petRepository.findIdLastPet();
+        if(lastViewPetId < lastPetId){
+            user.setPetId(petRepository.findNextPet(lastViewPetId).getId());
+            userRepository.save(user);
+        } else {
+            user.setPetId(petRepository.findIdFirstPet());
+            userRepository.save(user);
+        }
+    }
+    public void changePrevPetView(long chatId) {
+        User user = userRepository.findById(chatId).get();
+        long lastViewPetId = user.getPetId();
+        long firstPetId = petRepository.findIdFirstPet();
+        if (lastViewPetId != firstPetId) {
+            user.setPetId(petRepository.findPrevPet(lastViewPetId).getId());
+            userRepository.save(user);
+        } else {
+            user.setPetId(petRepository.findIdLastPet());
+            userRepository.save(user);
+        }
     }
     public void addPetImages(long chatId,List<String> photos){
         long petId = userRepository.findById(chatId).get().getAddedPetId();
@@ -166,21 +149,5 @@ public class PetService {
         System.out.println(pet);
         pet.setDescription(description);
         petRepository.save(pet);
-    }
-
-    /**
-     *
-     */
-    // проверять роль пользователя и изменяем животного в БД
-    public void editPet(){
-
-    }
-
-    /**
-     *
-     */
-    // проверять роль пользователя и удаляем животного из БД
-    public void deletePet(){
-
     }
 }
