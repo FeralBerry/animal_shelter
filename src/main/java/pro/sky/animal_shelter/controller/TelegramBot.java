@@ -40,11 +40,13 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Value("${telegram.bot.name}")
     private String botName;
     private final UpdateController updateController;
+    private final AdminReportController adminReportController;
     private final CallRepository callRepository;
     private final UserStatusService userStatusService;
     private final ReportService reportService;
-    public TelegramBot(UpdateController updateController, CallRepository callRepository, UserStatusService userStatusService, ReportService reportService){
+    public TelegramBot(UpdateController updateController, AdminReportController adminReportController, CallRepository callRepository, UserStatusService userStatusService, ReportService reportService){
         this.updateController = updateController;
+        this.adminReportController = adminReportController;
         this.callRepository = callRepository;
         this.userStatusService = userStatusService;
         this.reportService = reportService;
@@ -66,6 +68,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     @PostConstruct
     public void init(){
         updateController.registerBot(this);
+        adminReportController.registerBot(this);
     }
     @Override
     public String getBotUsername(){

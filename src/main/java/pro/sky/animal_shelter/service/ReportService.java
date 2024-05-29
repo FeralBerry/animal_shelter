@@ -2,6 +2,7 @@ package pro.sky.animal_shelter.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import pro.sky.animal_shelter.model.*;
 import pro.sky.animal_shelter.model.Repositories.AdoptionRepository;
@@ -85,5 +86,34 @@ public class ReportService {
             }
         }
         return listChatIds;
+    }
+    public List<Report> rawReports(){
+        return reportRepository.findReportIsNotCheck();
+    }
+    public Report getReport(long id){
+        if(reportRepository.findById(id).isPresent()){
+            Report report = reportRepository.findById(id).get();
+            report.setLooked(true);
+            reportRepository.save(report);
+            return report;
+        } else {
+            return null;
+        }
+    }
+    public void checkReportById(long id){
+        if(reportRepository.findById(id).isPresent()){
+            Report report = reportRepository.findById(id).get();
+            report.setChecked(true);
+            reportRepository.save(report);
+        }
+    }
+    public SendMessage incorrectReportById(long id){
+        SendMessage sendMessage = new SendMessage();
+        if(reportRepository.findById(id).isPresent()){
+            Report report = reportRepository.findById(id).get();
+            sendMessage.setChatId(report.getChatId());
+            sendMessage.setText("Не корректно сдан отчет");
+        }
+        return sendMessage;
     }
 }

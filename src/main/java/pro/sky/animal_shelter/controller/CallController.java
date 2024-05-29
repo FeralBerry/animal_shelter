@@ -1,6 +1,5 @@
 package pro.sky.animal_shelter.controller;
 
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import pro.sky.animal_shelter.service.CallService;
 
