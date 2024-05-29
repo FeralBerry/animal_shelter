@@ -1,6 +1,5 @@
 package pro.sky.animal_shelter.service;
 
-import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -56,29 +55,29 @@ public class UrlService {
             startService.register(update.getMessage());
             if (adminService.checkAdmin(chatId)) {
                 String msg = "Главное меню администратора";
-                userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
+                userStatusService.changeUserStatus(update, NO_STATUS.getStatus());
                 list.add(messageUtils.generateSendButton(chatId,msg));
             } else {
                 String msg = startService.start();
                 list.add(messageUtils.generateSendMessage(update,helloMsg.append(msg).toString()));
-                userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
+                userStatusService.changeUserStatus(update, NO_STATUS.getStatus());
             }
         }
         else if (message.equals(INFO.toString())) {
             list.add(messageUtils.generateSendMessage(update,
-                    helloMsg.append(info(chatId)).append(backMsg).toString()));
+                    helloMsg.append(info(update)).append(backMsg).toString()));
         }
         else if (message.equals(ABOUT.toString())) {
             list.add(messageUtils.generateSendMessage(update,
-                    helloMsg.append(about(chatId)).append(backMsg).toString()));
+                    helloMsg.append(about(update)).append(backMsg).toString()));
         }
         else if (message.equals(PET_REPORT_FORM.toString())) {
             list.add(messageUtils.generateSendMessage(update,
-                    petReportForm(chatId)));
+                    petReportForm(update)));
         }
         else if (message.equals(CONTACT_INFORMATION.toString())) {
             list.add(messageUtils.generateSendMessage(update,
-                    contactInformation(chatId)));
+                    contactInformation(update)));
         }
         else if (message.equals(TO_CALL_A_VOLUNTEER.toString())) {
             callVolunteer(update);
@@ -98,10 +97,10 @@ public class UrlService {
         }
         else if (message.equals(PET_LIST.toString())) {
             SendMessage sendMessage;
-            Pet petView = petService.getPet(chatId);
+            Pet petView = petService.getPet(update);
             String description = petView.getDescription();
             String petName = petView.getPetName();
-            userStatusService.changeUserStatus(chatId, VIEW_PET_LIST.getStatus());
+            userStatusService.changeUserStatus(update, VIEW_PET_LIST.getStatus());
             sendMessage = messageUtils.generateSendButton(chatId,"");
             sendMessage.setChatId(chatId);
             sendMessage.setText(petName + "\n" + description);
@@ -111,48 +110,43 @@ public class UrlService {
     }
 
     /**
-     * @param chatId получает id чата пользователя
      * @return возвращает строку, сгенерированную в методе info из infoService
      */
-    public String info(long chatId){
-        userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
+    public String info(Update update){
+        userStatusService.changeUserStatus(update, NO_STATUS.getStatus());
         return infoService.info();
     }
 
     /**
-     * @param chatId получает id чата пользователя
      * @return возвращает строку, сгенерированную в методе about из aboutService
      */
-    public String about(long chatId){
-        userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
+    public String about(Update update){
+        userStatusService.changeUserStatus(update, NO_STATUS.getStatus());
         return aboutService.about();
     }
 
     /**
-     * @param chatId получает id чата пользователя
      * @return возвращает строку, сгенерированную в методе getPetForm из petService
      */
-    public String petReportForm(long chatId){
-        userStatusService.changeUserStatus(chatId, GET_PET_FORM.getStatus());
+    public String petReportForm(Update update){
+        userStatusService.changeUserStatus(update, GET_PET_FORM.getStatus());
         return petService.getPetForm();
     }
 
     /**
-     * @param chatId получает id чата пользователя
      * @return возвращает строку, сгенерированную в методе getContactInformation из contactInformationService
      */
-    public String contactInformation(long chatId){
-        userStatusService.changeUserStatus(chatId, GET_CONTACT_INFORMATION.getStatus());
+    public String contactInformation(Update update){
+        userStatusService.changeUserStatus(update, GET_CONTACT_INFORMATION.getStatus());
         return contactInformationService.getContactInformation();
     }
 
     /**
-     * @param chatId получает id чата пользователя
      * @return возвращает объект животного из базы данных, последнего просмотренного или первого из списка
      */
-    public Pet petList(long chatId){
-        userStatusService.changeUserStatus(chatId, VIEW_PET_LIST.getStatus());
-        return petService.getPet(chatId);
+    public Pet petList(Update update){
+        userStatusService.changeUserStatus(update, VIEW_PET_LIST.getStatus());
+        return petService.getPet(update);
     }
 
     /**

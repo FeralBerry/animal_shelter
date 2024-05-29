@@ -5,7 +5,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import pro.sky.animal_shelter.model.ContactInformation;
 import pro.sky.animal_shelter.model.Pet;
-import pro.sky.animal_shelter.model.Repositories.PetsImgRepository;
 import pro.sky.animal_shelter.utils.MessageUtils;
 
 import java.util.ArrayList;
@@ -78,7 +77,7 @@ public class ButtonService {
             sendMessageList.add(sendMessage);
         } else if(callBackData.equals(PET_BUTTON_PREV.getCommand())) {
             SendMessage sendMessage;
-            Pet petView = petService.getPet(chatId);
+            Pet petView = petService.getPet(update);
             String description = petView.getDescription();
             String petName = petView.getPetName();
             sendMessage = messageUtils.generateSendButton(chatId,"");
@@ -87,7 +86,7 @@ public class ButtonService {
             sendMessageList.add(sendMessage);
         } else if(callBackData.equals(PET_BUTTON_NEXT.getCommand())) {
             SendMessage sendMessage;
-            Pet petView = petService.getPet(chatId);
+            Pet petView = petService.getPet(update);
             String description = petView.getDescription();
             String petName = petView.getPetName();
             sendMessage = messageUtils.generateSendButton(chatId,"");
@@ -115,7 +114,7 @@ public class ButtonService {
             sendMessageList.add(messageUtils.generateSendMessage(update, contactInformationService.getContactInformation()));
         } else if(callBackData.equals(PET_BUTTON_PREV.getCommand())) {
             SendMessage sendMessage;
-            Pet petView = petService.getPet(chatId);
+            Pet petView = petService.getPet(update);
             String description = petView.getDescription();
             String petName = petView.getPetName();
             sendMessage = messageUtils.generateSendButton(chatId,"");
@@ -124,7 +123,7 @@ public class ButtonService {
             sendMessageList.add(sendMessage);
         } else if(callBackData.equals(PET_BUTTON_NEXT.getCommand())) {
             SendMessage sendMessage;
-            Pet petView = petService.getPet(chatId);
+            Pet petView = petService.getPet(update);
             String description = petView.getDescription();
             String petName = petView.getPetName();
             sendMessage = messageUtils.generateSendButton(chatId,"");
