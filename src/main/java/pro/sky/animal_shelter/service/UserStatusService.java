@@ -2,8 +2,9 @@ package pro.sky.animal_shelter.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.objects.Update;
 import pro.sky.animal_shelter.model.User;
-import pro.sky.animal_shelter.model.UserRepository;
+import pro.sky.animal_shelter.model.Repositories.UserRepository;
 
 
 @Slf4j
@@ -15,10 +16,32 @@ public class UserStatusService {
     }
 
     /**
-     *
-     * @param chatId
      * @param newStatus
      */
+    public void changeUserStatus(Update update, String newStatus){
+        long chatId = update.getMessage().getChatId();
+        User user = new User();
+        /**
+         * 1. Находит объект пользователя по идентификатору chatId с помощью метода findById().
+         * 2. Если пользователь найден, то устанавливает для него роль, идентификатор чата, имя, фамилию и имя пользователя с помощью
+         * методов setRole(), setChatId(), setFirstName(), setLastName() и setUserName().
+         * 3. Устанавливает местоположение пользователя в приложении с помощью метода setLocationUserOnApp().
+         * 4. Сохраняет изменённого пользователя в базе данных с помощью метода save().
+         * 5. Выводит информацию о том, что статус пользователя был изменён, с помощью метода log.info().
+         */
+        userRepository.findById(chatId)
+                .ifPresent(i -> {
+                    user.setRole(i.getRole());
+                    user.setChatId(chatId);
+                    user.setFirstName(i.getFirstName());
+                    user.setLastName(i.getLastName());
+                    user.setUserName(i.getUserName());
+                    user.setAddedPetId(i.getAddedPetId());
+                    user.setLocationUserOnApp(newStatus);
+                });
+        userRepository.save(user);
+        log.info("user " + user +" changed status: " + newStatus);
+    }
     public void changeUserStatus(long chatId, String newStatus){
         User user = new User();
         /**

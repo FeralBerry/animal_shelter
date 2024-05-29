@@ -5,9 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import pro.sky.animal_shelter.model.Call;
-import pro.sky.animal_shelter.model.CallRepository;
+import pro.sky.animal_shelter.model.Repositories.CallRepository;
 import pro.sky.animal_shelter.model.User;
-import pro.sky.animal_shelter.model.UserRepository;
+import pro.sky.animal_shelter.model.Repositories.UserRepository;
 
 import java.util.Date;
 import java.util.Random;

@@ -53,12 +53,13 @@ public class UrlService {
         String backMsg =  "Если хотите чтобы с Вами связались нажмите на ссылку или выберете пункт в меню /contact_information \n" +
                 "Если хотите связаться с волонтером нажмите на ссылку или выберете пункт в меню /to_call_a_volunteer";
         if (message.equals(START.toString())) {
-            String msg = startService.start();
             startService.register(update.getMessage());
             if (adminService.checkAdmin(chatId)) {
+                String msg = "Главное меню администратора";
                 userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
                 list.add(messageUtils.generateSendButton(chatId,msg));
             } else {
+                String msg = startService.start();
                 list.add(messageUtils.generateSendMessage(update,helloMsg.append(msg).toString()));
                 userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
             }
@@ -96,13 +97,15 @@ public class UrlService {
             }
         }
         else if (message.equals(PET_LIST.toString())) {
-            Pet pet = petService.getPet(chatId);
-            SendMessage sendMessage = new SendMessage();
+            SendMessage sendMessage;
+            Pet petView = petService.getPet(chatId);
+            String description = petView.getDescription();
+            String petName = petView.getPetName();
+            userStatusService.changeUserStatus(chatId, VIEW_PET_LIST.getStatus());
+            sendMessage = messageUtils.generateSendButton(chatId,"");
             sendMessage.setChatId(chatId);
-            sendMessage.setText(pet.getPetName() + "\n" + pet.getDescription());
+            sendMessage.setText(petName + "\n" + description);
             list.add(sendMessage);
-            var sendButton = messageUtils.generateSendButton(chatId,"");
-            list.add(sendButton);
         }
         return list;
     }
@@ -111,7 +114,6 @@ public class UrlService {
      * @param chatId получает id чата пользователя
      * @return возвращает строку, сгенерированную в методе info из infoService
      */
-    @Operation(summary = "Вывод информации о документах, правилах, чтобы забрать животное")
     public String info(long chatId){
         userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
         return infoService.info();
@@ -121,7 +123,6 @@ public class UrlService {
      * @param chatId получает id чата пользователя
      * @return возвращает строку, сгенерированную в методе about из aboutService
      */
-    @Operation(summary = "Вывод информации о приюте")
     public String about(long chatId){
         userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
         return aboutService.about();
@@ -131,7 +132,6 @@ public class UrlService {
      * @param chatId получает id чата пользователя
      * @return возвращает строку, сгенерированную в методе getPetForm из petService
      */
-    @Operation(summary = "Выводит информации о форме отчета")
     public String petReportForm(long chatId){
         userStatusService.changeUserStatus(chatId, GET_PET_FORM.getStatus());
         return petService.getPetForm();
@@ -141,7 +141,6 @@ public class UrlService {
      * @param chatId получает id чата пользователя
      * @return возвращает строку, сгенерированную в методе getContactInformation из contactInformationService
      */
-    @Operation(summary = "Выводит формат для отправки контактной информации")
     public String contactInformation(long chatId){
         userStatusService.changeUserStatus(chatId, GET_CONTACT_INFORMATION.getStatus());
         return contactInformationService.getContactInformation();
@@ -151,7 +150,6 @@ public class UrlService {
      * @param chatId получает id чата пользователя
      * @return возвращает объект животного из базы данных, последнего просмотренного или первого из списка
      */
-    @Operation(summary = "Выводит последнее просмотренное животное или первое")
     public Pet petList(long chatId){
         userStatusService.changeUserStatus(chatId, VIEW_PET_LIST.getStatus());
         return petService.getPet(chatId);
@@ -161,7 +159,6 @@ public class UrlService {
      * @param update объект чата пользователя
      * @return возвращает id свободного администратора или 0
      */
-    @Operation(summary = "Возвращает id свободного администратора")
     public Long callVolunteer(Update update){
         return callService.createCall(update);
     }

@@ -2,8 +2,9 @@ package pro.sky.animal_shelter.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.objects.Update;
 import pro.sky.animal_shelter.model.ContactInformation;
-import pro.sky.animal_shelter.model.ContactInformationRepository;
+import pro.sky.animal_shelter.model.Repositories.ContactInformationRepository;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -12,7 +13,7 @@ import java.util.regex.Pattern;
 @Slf4j
 @Service
 public class ContactInformationService {
-    private final String MESSAGE= "Введите номер телефона в формате: +7-9**-***-**-**";
+    private final static String MESSAGE= "Введите номер телефона в формате: +7-9**-***-**-**";
     private final ContactInformationRepository contactInformationRepository;
     public ContactInformationService(ContactInformationRepository contactInformationRepository){
         this.contactInformationRepository = contactInformationRepository;
@@ -25,11 +26,11 @@ public class ContactInformationService {
     }
 
     /**
-     * @param message получаем строку, написанную пользователем в чате с ботом проверяем телефон это или нет
-     * @param chatId id чата из которого отправлено сообщение
      * @return возвращаем true сообщение отправлено по формату или false, если не по формату
      */
-    public boolean addContactPhone(String message, long chatId){
+    public boolean addContactPhone(Update update){
+        String message = update.getMessage().getText();
+        long chatId = update.getMessage().getChatId();
         Pattern pattern = Pattern.compile("^(\\+\\d{1,3}( )?)?((\\(\\d{3}\\))|\\d{3})[- .]?\\d{3}[- .]?\\d{2}[- .]?\\d{2}$");
         Matcher matcher = pattern.matcher(message);
         ContactInformation contactInformation = new ContactInformation();
@@ -43,11 +44,11 @@ public class ContactInformationService {
     }
 
     /**
-     * @param message сообщение пользователя с именем
-     * @param chatId id чата из которого прислали сообщение
      * @return возвращаем true, если сообщение не пустое, или false, если отправлено пустое сообщение
      */
-    public boolean addContactName(String message,long chatId){
+    public boolean addContactName(Update update){
+        String message = update.getMessage().getText();
+        long chatId = update.getMessage().getChatId();
         if(message.isEmpty()){
             return false;
         } else {

@@ -4,17 +4,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import pro.sky.animal_shelter.service.*;
 import pro.sky.animal_shelter.utils.MessageUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import static pro.sky.animal_shelter.enums.AdminStatusEnum.PET_ADD_IMG;
-import static pro.sky.animal_shelter.enums.AdminStatusEnum.PET_ADD_NAME;
+import static pro.sky.animal_shelter.enums.AdminStatusEnum.*;
 import static pro.sky.animal_shelter.enums.BotCommandEnum.PET_LIST;
+import static pro.sky.animal_shelter.enums.PetButtonEnum.PET_BUTTON_NEXT;
+import static pro.sky.animal_shelter.enums.PetButtonEnum.PET_BUTTON_PREV;
+import static pro.sky.animal_shelter.enums.UserSatausEnum.*;
 
 @Controller
 @Slf4j
@@ -27,7 +29,8 @@ public class UpdateController {
     private final UserStatusService userStatusService;
     private final ButtonService buttonService;
     private final PetService petService;
-    public UpdateController(MessageUtils messageUtils, UrlService urlService, TextService textService, AdminService adminService, UserStatusService userStatusService, ButtonService buttonService, PetService petService){
+    private final ReportService reportService;
+    public UpdateController(MessageUtils messageUtils, UrlService urlService, TextService textService, AdminService adminService, UserStatusService userStatusService, ButtonService buttonService, PetService petService, ReportService reportService){
         this.messageUtils = messageUtils;
         this.urlService = urlService;
         this.textService = textService;
@@ -35,6 +38,7 @@ public class UpdateController {
         this.userStatusService = userStatusService;
         this.buttonService = buttonService;
         this.petService = petService;
+        this.reportService = reportService;
     }
     public void registerBot(TelegramBot telegramBot){
         this.telegramBot = telegramBot;
@@ -59,8 +63,6 @@ public class UpdateController {
             processTextMessage(update);
         } else if(message.getPhoto() != null) {
             processPhotoMessage(update);
-        } else if(message.getDocument() != null) {
-            processDocumentMessage(update);
         } else {
             setUnsupportedMessageTypeView(update);
         }
@@ -77,21 +79,29 @@ public class UpdateController {
     public void setView(SendMediaGroup sendMediaGroup) {
         telegramBot.sendAnswerMessage(sendMediaGroup);
     }
+    public void setView(SendPhoto sendPhoto) {
+        telegramBot.sendAnswerMessage(sendPhoto);
+    }
     public void setView(EditMessageText editMessageText){
         telegramBot.sendAnswerMessage(editMessageText);
     }
 
-    private void processDocumentMessage(Update update) {
-
-    }
 
     private void processPhotoMessage(Update update) {
         long chatId = update.getMessage().getChatId();
         if (userStatusService.getUserStatus(chatId).equals(PET_ADD_NAME.getStatus()) ||
                 userStatusService.getUserStatus(chatId).equals(PET_ADD_IMG.getStatus())) {
-            List<String> photos = telegramBot.downloadPhotos(update);
+            List<String> photos = telegramBot.downloadPhotos(update,"src/main/resources/img/pets");
             adminService.addPetPhotos(update,photos);
             userStatusService.changeUserStatus(chatId,PET_ADD_IMG.getStatus());
+        } else if (userStatusService.getUserStatus(chatId).equals(ADD_PET_REPORT_IMG.getStatus())) {
+            List<String> photos = telegramBot.downloadPhotos(update,"src/main/resources/img/report/"+ chatId);
+            reportService.addImgReport(update,photos);
+            userStatusService.changeUserStatus(chatId,ADD_PET_REPORT_TEXT.getStatus());
+            setView(messageUtils.generateSendMessage(update,"Отлично фото уже есть осталось прислать:\n" +
+                    "- Рацион животного" +"\n" +
+                    "- Общее самочувствие и привыкание к новому месту" +"\n" +
+                    "- Изменения в поведении: отказ от старых привычек, приобретение новых"));
         }
     }
 
@@ -100,15 +110,7 @@ public class UpdateController {
         long chatId = update.getMessage().getChatId();
         if(message.charAt(0) == '/'){
             if(message.equals(PET_LIST.toString())){
-                if(petService.getPetImages(chatId).size() > 1){
-                    List <SendMediaGroup> sendMediaGroups = new ArrayList<>();
-                    sendMediaGroups.add(messageUtils.sendMediaGroup(chatId, petService.getPetImages(chatId)));
-                    for (SendMediaGroup msg : sendMediaGroups){
-                        setView(msg);
-                    }
-                } else {
-
-                }
+                petListPhotos(chatId);
             }
             for(SendMessage msg : urlService.defineACommand(update)){
                 setView(msg);
@@ -120,9 +122,26 @@ public class UpdateController {
         }
     }
     private void processButtonMessage(Update update) {
+        String callBackData = update.getCallbackQuery().getData();
+        long chatId = update.getCallbackQuery().getFrom().getId();
+        if(callBackData.equals(PET_BUTTON_PREV.getCommand())) {
+            petService.changePrevPetView(chatId);
+            petListPhotos(chatId);
+        } else if(callBackData.equals(PET_BUTTON_NEXT.getCommand())) {
+            petService.changeNextPetView(chatId);
+            petListPhotos(chatId);
+        }
         for (SendMessage msg : buttonService.defineCommand(update)){
             setView(msg);
         }
     }
-
+    private void petListPhotos(long chatId){
+        if(petService.getPetImages(chatId).size() > 1){
+            SendMediaGroup sendMediaGroups = messageUtils.sendMediaGroup(chatId, petService.getPetImages(chatId));
+            setView(sendMediaGroups);
+        } else {
+            SendPhoto sendPhoto = messageUtils.sendPhoto(chatId,petService.getPetImages(chatId).get(0));
+            setView(sendPhoto);
+        }
+    }
 }
