@@ -13,6 +13,8 @@ public class Report {
     private Long chatId;
     private Long petId;
     private Long updatedAt;
+    private boolean checked;
+    private boolean looked;
 
     public Long getId() {
         return id;
@@ -50,6 +52,14 @@ public class Report {
         return updatedAt;
     }
 
+    public boolean isLooked() {
+        return looked;
+    }
+
+    public void setLooked(boolean looked) {
+        this.looked = looked;
+    }
+
     public void setUpdatedAt(Long updatedAt) {
         this.updatedAt = updatedAt;
     }
@@ -67,6 +77,15 @@ public class Report {
         int result = Objects.hash(id, text, chatId, petId);
         result = 31 * result;
         return result;
+    }
+
+
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
     }
 
     @Override

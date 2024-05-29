@@ -2,6 +2,7 @@ package pro.sky.animal_shelter.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.objects.Update;
 import pro.sky.animal_shelter.model.*;
 import pro.sky.animal_shelter.model.Repositories.PetRepository;
 import pro.sky.animal_shelter.model.Repositories.PetsImgRepository;
@@ -48,11 +49,10 @@ public class PetService {
 
     /**
      *
-     * @param chatId
      * @return
      */
-    public Pet getPet(long chatId){
-        User newUser = userRepository.findById(chatId).get();
+    public Pet getPet(Update update){
+        User newUser = userRepository.findById(update.getMessage().getChatId()).get();
         long lastViewPetId = newUser.getPetId();
         return checkPet(lastViewPetId,newUser);
     }
@@ -97,8 +97,8 @@ public class PetService {
                 });
         userRepository.save(user);
     }
-    public List<String> getPetImages(long chatId){
-        List<PetsImg> petImages = petsImgRepository.findPetsImgByPetId(getPet(chatId).getId());
+    public List<String> getPetImages(Update update){
+        List<PetsImg> petImages = petsImgRepository.findPetsImgByPetId(getPet(update).getId());
         List<String> images = new ArrayList<>();
         for (PetsImg petsImg : petImages){
             images.add(petsImg.getFileId());
