@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import pro.sky.animal_shelter.controller.TelegramBot;
 import pro.sky.animal_shelter.model.*;
 import pro.sky.animal_shelter.model.Repositories.AdoptionRepository;
 import pro.sky.animal_shelter.model.Repositories.ReportImgRepository;
@@ -22,6 +23,10 @@ public class ReportService {
     private final ReportImgRepository reportImgRepository;
     private final AdoptionRepository adoptionRepository;
     private final UserRepository userRepository;
+    private TelegramBot telegramBot;
+    public void registerBot(TelegramBot telegramBot){
+        this.telegramBot = telegramBot;
+    }
 
     public ReportService(ReportRepository reportRepository, ReportImgRepository reportImgRepository, AdoptionRepository adoptionRepository, UserRepository userRepository){
         this.reportRepository = reportRepository;
@@ -72,8 +77,15 @@ public class ReportService {
         List<Report> reports = reportRepository.findByUpdatedAt(nowSec - 60*60*24);
         List<Long> listChatIds = new ArrayList<>();
         List<Long> listReportChatIds = new ArrayList<>();
+        SendMessage sendMessage = new SendMessage();
         for (Adoption adoption : adoptions){
-            listChatIds.add(adoption.getUser().getChatId());
+            if((nowSec - adoption.getAdoptAt()) < 14*24*60*60){
+                sendMessage.setChatId(adoption.getUser().getChatId());
+                sendMessage.setText("Поздравляю с завершением испытательного срока.");
+                adoptionRepository.delete(adoption);
+            } else {
+                listChatIds.add(adoption.getUser().getChatId());
+            }
         }
         for (Report report : reports){
             listReportChatIds.add(report.getChatId());
@@ -112,8 +124,41 @@ public class ReportService {
         if(reportRepository.findById(id).isPresent()){
             Report report = reportRepository.findById(id).get();
             sendMessage.setChatId(report.getChatId());
-            sendMessage.setText("Не корректно сдан отчет");
+            sendMessage.setText("Дорогой усыновитель, мы заметили, что ты заполняешь отчет " +
+                    "не так подробно, как необходимо. Пожалуйста, подойди ответственнее к этому занятию. " +
+                    "В противном случае волонтеры приюта будут обязаны самолично проверять условия содержания животного");
         }
         return sendMessage;
     }
+    public SendMessage increaseTheAdaptationPeriod14Day(long chatId) {
+        SendMessage sendMessage = new SendMessage();
+        long nowSec = (new Date().getTime())/1000;
+        Adoption adoption = new Adoption();
+        if(userRepository.findById(chatId).isPresent()){
+            adoption = adoptionRepository.findByUser(userRepository.findById(chatId).get());
+            adoption.setAdoptAt(nowSec + 14*24*60*60);
+        }
+        adoptionRepository.save(adoption);
+        sendMessage.setChatId(chatId);
+        sendMessage.setText("Было добавлено 14 дней для адаптационного периода.");
+        return sendMessage;
+    }
+    public SendMessage increaseTheAdaptationPeriod30Day(long chatId) {
+        SendMessage sendMessage = new SendMessage();
+        long nowSec = (new Date().getTime())/1000;
+        Adoption adoption = new Adoption();
+        if(userRepository.findById(chatId).isPresent()){
+            adoption = adoptionRepository.findByUser(userRepository.findById(chatId).get());
+            adoption.setAdoptAt(nowSec + 30*24*60*60);
+        }
+        adoptionRepository.save(adoption);
+        sendMessage.setChatId(chatId);
+        sendMessage.setText("Было добавлено 30 дней для адаптационного периода.");
+        return sendMessage;
+    }
+    public void setView(SendMessage sendMessage) {
+        telegramBot.sendAnswerMessage(sendMessage);
+    }
+
+
 }

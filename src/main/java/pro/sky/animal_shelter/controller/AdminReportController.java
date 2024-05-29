@@ -2,10 +2,7 @@ package pro.sky.animal_shelter.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import pro.sky.animal_shelter.model.Report;
 import pro.sky.animal_shelter.service.ReportService;
@@ -45,6 +42,16 @@ public class AdminReportController {
     @Operation(description = "Отправка сообщения, если отчет сдан не верно")
     public void incorrectReportById(@PathVariable long id){
         setView(reportService.incorrectReportById(id));
+    }
+    @PostMapping("/increase-the-adaptation-period/14day/{chatId}")
+    @Operation(description = "Добавляет 14 дней адаптационного периода для животного")
+    public void increaseTheAdaptationPeriod14Day(@PathVariable String chatId){
+        setView(reportService.increaseTheAdaptationPeriod14Day(Long.parseLong(chatId)));
+    }
+    @PostMapping("/increase-the-adaptation-period/30day/{chatId}")
+    @Operation(description = "Добавляет 30 дней адаптационного периода для животного")
+    public void increaseTheAdaptationPeriod30Day(@PathVariable String chatId){
+        setView(reportService.increaseTheAdaptationPeriod30Day(Long.parseLong(chatId)));
     }
     public void setView(SendMessage sendMessage) {
         telegramBot.sendAnswerMessage(sendMessage);
