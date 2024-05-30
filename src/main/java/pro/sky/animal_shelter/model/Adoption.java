@@ -13,6 +13,15 @@ public class Adoption {
     private Pet pet;
     @OneToOne
     private User user;
+    private Long adoptAt;
+
+    public Long getAdoptAt() {
+        return adoptAt;
+    }
+
+    public void setAdoptAt(Long adoptAt) {
+        this.adoptAt = adoptAt;
+    }
 
     public Long getId() {
         return id;

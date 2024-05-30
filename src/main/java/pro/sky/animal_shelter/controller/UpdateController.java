@@ -107,10 +107,9 @@ public class UpdateController {
 
     private void processTextMessage(Update update) {
         String message = update.getMessage().getText();
-        long chatId = update.getMessage().getChatId();
         if(message.charAt(0) == '/'){
             if(message.equals(PET_LIST.toString())){
-                petListPhotos(chatId);
+                petListPhotos(update);
             }
             for(SendMessage msg : urlService.defineACommand(update)){
                 setView(msg);
@@ -126,21 +125,21 @@ public class UpdateController {
         long chatId = update.getCallbackQuery().getFrom().getId();
         if(callBackData.equals(PET_BUTTON_PREV.getCommand())) {
             petService.changePrevPetView(chatId);
-            petListPhotos(chatId);
+            petListPhotos(update);
         } else if(callBackData.equals(PET_BUTTON_NEXT.getCommand())) {
             petService.changeNextPetView(chatId);
-            petListPhotos(chatId);
+            petListPhotos(update);
         }
         for (SendMessage msg : buttonService.defineCommand(update)){
             setView(msg);
         }
     }
-    private void petListPhotos(long chatId){
-        if(petService.getPetImages(chatId).size() > 1){
-            SendMediaGroup sendMediaGroups = messageUtils.sendMediaGroup(chatId, petService.getPetImages(chatId));
+    private void petListPhotos(Update update){
+        if(petService.getPetImages(update).size() > 1){
+            SendMediaGroup sendMediaGroups = messageUtils.sendMediaGroup(update.getMessage().getChatId(), petService.getPetImages(update));
             setView(sendMediaGroups);
         } else {
-            SendPhoto sendPhoto = messageUtils.sendPhoto(chatId,petService.getPetImages(chatId).get(0));
+            SendPhoto sendPhoto = messageUtils.sendPhoto(update.getMessage().getChatId(),petService.getPetImages(update).get(0));
             setView(sendPhoto);
         }
     }
