@@ -7,6 +7,7 @@ import pro.sky.animal_shelter.model.ContactInformation;
 import pro.sky.animal_shelter.model.Repositories.ContactInformationRepository;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,10 +53,14 @@ public class ContactInformationService {
         if(message.isEmpty()){
             return false;
         } else {
-            ContactInformation contactInformation = contactInformationRepository.findById(chatId).get();
-            contactInformation.setName(message);
-            contactInformationRepository.save(contactInformation);
-            return true;
+            if(contactInformationRepository.findById(chatId).isPresent()){
+                ContactInformation contactInformation = contactInformationRepository.findById(chatId).get();
+                contactInformation.setName(message);
+                contactInformationRepository.save(contactInformation);
+                return true;
+            } else {
+                throw new NoSuchElementException("Контактной информации от пользователя " + chatId + " не найдена");
+            }
         }
     }
     /**
