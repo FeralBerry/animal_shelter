@@ -84,7 +84,6 @@ public class UpdateController {
         telegramBot.sendAnswerMessage(editMessageText);
     }
 
-
     private void processPhotoMessage(Update update) {
         long chatId = update.getMessage().getChatId();
         if (userStatusService.getUserStatus(chatId).equals(PET_ADD_NAME.getStatus()) ||
