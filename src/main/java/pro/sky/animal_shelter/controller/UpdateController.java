@@ -25,16 +25,14 @@ public class UpdateController {
     private final MessageUtils messageUtils;
     private final UrlService urlService;
     private final TextService textService;
-    private final AdminService adminService;
     private final UserStatusService userStatusService;
     private final ButtonService buttonService;
     private final PetService petService;
     private final ReportService reportService;
-    public UpdateController(MessageUtils messageUtils, UrlService urlService, TextService textService, AdminService adminService, UserStatusService userStatusService, ButtonService buttonService, PetService petService, ReportService reportService){
+    public UpdateController(MessageUtils messageUtils, UrlService urlService, TextService textService, UserStatusService userStatusService, ButtonService buttonService, PetService petService, ReportService reportService){
         this.messageUtils = messageUtils;
         this.urlService = urlService;
         this.textService = textService;
-        this.adminService = adminService;
         this.userStatusService = userStatusService;
         this.buttonService = buttonService;
         this.petService = petService;
@@ -92,16 +90,17 @@ public class UpdateController {
         if (userStatusService.getUserStatus(chatId).equals(PET_ADD_NAME.getStatus()) ||
                 userStatusService.getUserStatus(chatId).equals(PET_ADD_IMG.getStatus())) {
             List<String> photos = telegramBot.downloadPhotos(update,"src/main/resources/img/pets");
-            adminService.addPetPhotos(update,photos);
+            petService.addPetImages(chatId,photos);
             userStatusService.changeUserStatus(chatId,PET_ADD_IMG.getStatus());
         } else if (userStatusService.getUserStatus(chatId).equals(ADD_PET_REPORT_IMG.getStatus())) {
             List<String> photos = telegramBot.downloadPhotos(update,"src/main/resources/img/report/"+ chatId);
             reportService.addImgReport(update,photos);
             userStatusService.changeUserStatus(chatId,ADD_PET_REPORT_TEXT.getStatus());
-            setView(messageUtils.generateSendMessage(update,"Отлично фото уже есть осталось прислать:\n" +
-                    "- Рацион животного" +"\n" +
-                    "- Общее самочувствие и привыкание к новому месту" +"\n" +
-                    "- Изменения в поведении: отказ от старых привычек, приобретение новых"));
+            setView(messageUtils.generateSendMessage(update, """
+                    Отлично фото уже есть осталось прислать:
+                    - Рацион животного
+                    - Общее самочувствие и привыкание к новому месту
+                    - Изменения в поведении: отказ от старых привычек, приобретение новых"""));
         }
     }
 
