@@ -74,17 +74,18 @@ public class ReportService {
         long nowSec = (new Date().getTime())/1000;
         List<Report> reports = reportRepository.findByUpdatedAt(nowSec - 60*60*24);
         List<Long> listReportChatIds = new ArrayList<>();
+        List<Long> adoptionChatId = adoptionChatId();
         for (Report report : reports){
             listReportChatIds.add(report.getChatId());
         }
-        for (int i = 0; i < adoptionChatId().size();i++){
+        for (int i = 0; i < adoptionChatId.size();i++){
             for (Long listReportChatId : listReportChatIds) {
-                if (Objects.equals(adoptionChatId().get(i), listReportChatId)) {
-                    adoptionChatId().remove(i);
+                if (Objects.equals(adoptionChatId.get(i), listReportChatId)) {
+                    adoptionChatId.remove(i);
                 }
             }
         }
-        return adoptionChatId();
+        return adoptionChatId;
     }
 
     /**

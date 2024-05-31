@@ -17,11 +17,9 @@ public class AboutService {
     }
 
     /**
-     * 1. Создаёт экземпляр класса StringBuilder для формирования строки с информацией о данных объекта About.
-     * 2. Находит все объекты типа About с помощью метода findAll().
-     * 3. Если список объектов About пуст, то в строку добавляется сообщение «Описание пока отсутствует».
-     * 4. В противном случае происходит перебор всех найденных объектов и добавление их свойств в формируемую строку.
-     * 5. Возвращает сформированную строку как результат работы метода about().
+     * Метод проверяет существование описания в базе данных, если существует,
+     * то собирает из таблиц базы данных сообщение
+     * @return строку для вывода пользователю информации о приюте
      */
     public String about(){
         StringBuilder message = new StringBuilder();
@@ -29,24 +27,37 @@ public class AboutService {
         if(about.isEmpty()){
             message.append("Описание пока отсутствует");
         } else {
-            for (int i = 0; i < about.size();i++) {
-                message.append(about.get(i).getShelterName()).append("\n");
-                message.append(about.get(i).getSchedule()).append("\n");
-                message.append(about.get(i).getSecurityContacts()).append("\n");
+            for (About value : about) {
+                message.append(value.getShelterName()).append("\n");
+                message.append(value.getSchedule()).append("\n");
+                message.append(value.getSecurityContacts()).append("\n");
             }
         }
         return message.toString();
     }
+
+    /**
+     * Метод для сохранения названия приюта
+     * @param text текст из чата с телеграмм ботом
+     */
     public void addShelterName(String text){
         About about = aboutRepository.findAbout();
         about.setShelterName(text);
         aboutRepository.save(about);
     }
+    /**
+     * Метод для сохранения графика приюта
+     * @param text текст из чата с телеграмм ботом
+     */
     public void addSchedule(String text){
         About about = aboutRepository.findAbout();
         about.setSchedule(text);
         aboutRepository.save(about);
     }
+    /**
+     * Метод для сохранения контактов охраны
+     * @param text текст из чата с телеграмм ботом
+     */
     public void addSecurityContacts(String text){
         About about = aboutRepository.findAbout();
         about.setSecurityContacts(text);
