@@ -161,7 +161,7 @@ public class ReportService {
      */
     public SendMessage increaseTheAdaptationPeriod14Day(long id) {
         SendMessage sendMessage = new SendMessage();
-        long chatId = getReportById(id).getChatId();
+        long chatId = reportRepository.findByChatId(id).getChatId();
         long nowSec = (new Date().getTime())/1000;
         Adoption adoption = adoptionRepository.findByUser(getUserById(chatId));
         adoption.setAdoptAt(nowSec + 14*24*60*60);
@@ -180,7 +180,7 @@ public class ReportService {
      */
     public SendMessage increaseTheAdaptationPeriod30Day(long id) {
         SendMessage sendMessage = new SendMessage();
-        long chatId = getReportById(id).getChatId();
+        long chatId = reportRepository.findByChatId(id).getChatId();
         long nowSec = (new Date().getTime())/1000;
         Adoption adoption = adoptionRepository.findByUser(getUserById(chatId));
         adoption.setAdoptAt(nowSec + 30*24*60*60);
