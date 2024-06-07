@@ -44,7 +44,6 @@ public class ReportService {
             ReportImg reportImg = new ReportImg();
             reportImg.setPetId(pet.getId());
             reportImg.setChatId(user.getChatId());
-            reportImg.setChatId(user.getChatId());
             reportImg.setFileId(photo);
             list.add(reportImg);
         }
@@ -125,10 +124,7 @@ public class ReportService {
      * @return возвращает отчет по id или null если такого отчета нет
      */
     public Report getReport(long id){
-        Report report = getReportById(id);
-        report.setLooked(true);
-        reportRepository.save(report);
-        return report;
+        return getReportById(id);
     }
 
     /**
