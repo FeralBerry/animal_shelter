@@ -6,8 +6,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import pro.sky.animal_shelter.enums.AdminButtonMenuEnum;
 import pro.sky.animal_shelter.enums.PetButtonEnum;
 import pro.sky.animal_shelter.enums.UserButtonEnum;
-import pro.sky.animal_shelter.model.Repositories.PetRepository;
-import pro.sky.animal_shelter.model.Repositories.UserRepository;
 
 
 import java.util.ArrayList;
@@ -17,18 +15,15 @@ import java.util.List;
 @Service
 public class CreateButtonService {
 
-    public CreateButtonService(){
-
-    }
     private final static int COUNT_BUTTON_USER_ON_SCREEN = 2;
     private final static int COUNT_BUTTON_ADMIN_ON_SCREEN = 2;
 
     /**
-     *
-     * @return
+     * Метод создание списка кнопок главного меню администратора
+     * @return список кнопок администратора сгруппированных по COUNT_BUTTON_ADMIN_ON_SCREEN
      */
-    public List createButtonToMainMenuAdmin(){
-        List<Object> rowsInLine;
+    public List<List<InlineKeyboardButton>> createButtonToMainMenuAdmin(){
+        List<List<InlineKeyboardButton>> rowsInLine;
         List<InlineKeyboardButton> rowInLine = new ArrayList<>();
         for (AdminButtonMenuEnum adminButtonMenuEnum : AdminButtonMenuEnum.values()){
             rowInLine.add(createButton(adminButtonMenuEnum.getText(), adminButtonMenuEnum.getCommand()));
@@ -38,12 +33,12 @@ public class CreateButtonService {
     }
 
     /**
-     *
-     * @return
+     * Метод создание списка кнопок меню пользователя который ввел сообщение боту
+     * @return список кнопок пользователя сгруппированных по COUNT_BUTTON_USER_ON_SCREEN
      */
 
-    public List createButtonToUser(){
-        List<Object> rowsInLine;
+    public List<List<InlineKeyboardButton>> createButtonToUser(){
+        List<List<InlineKeyboardButton>> rowsInLine;
         List<InlineKeyboardButton> rowInLine = new ArrayList<>();
         for (UserButtonEnum userButtonEnum : UserButtonEnum.values()){
             rowInLine.add(createButton(userButtonEnum.getText(),userButtonEnum.getCommand()));
@@ -53,10 +48,10 @@ public class CreateButtonService {
     }
 
     /**
-     *
-     * @param buttonText
-     * @param buttonCommand
-     * @return
+     * Метод генерирующий кнопку
+     * @param buttonText текст кнопки
+     * @param buttonCommand команда кнопки для дальнейшей обработки callback
+     * @return объект содержащий информацию о виде кнопки
      */
     private InlineKeyboardButton createButton(String buttonText, String buttonCommand){
         InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
@@ -66,11 +61,11 @@ public class CreateButtonService {
     }
 
     /**
-     *
-     * @param list
-     * @param n
-     * @return
-     * @param <T>
+     * Метод для разбиения списка на несколько
+     * @param list список который надо разбить на подсписки
+     * @param n число по сколько разбивать список
+     * @return возвращает список разбитый по n элементов
+     * @param <T> передаваемый объект внутри списка
      */
     public static<T> List[] partition(List<T> list, int n)
     {
@@ -91,11 +86,11 @@ public class CreateButtonService {
     }
 
     /**
-     *
-     * @return
+     * Метод создающий кнопки для просмотра животных (Вперед, Назад)
+     * @return возвращает список объектов визуальной клавиатуры с 2 кнопками
      */
-    public List createButtonToViewPetList(){
-        List<Object> rowsInLine;
+    public List<List<InlineKeyboardButton>> createButtonToViewPetList(){
+        List<List<InlineKeyboardButton>> rowsInLine;
         List<InlineKeyboardButton> rowInLine = new ArrayList<>();
         rowInLine.add(createButton(PetButtonEnum.PET_BUTTON_PREV.getText(), PetButtonEnum.PET_BUTTON_PREV.getCommand()));
         rowInLine.add(createButton(PetButtonEnum.PET_BUTTON_NEXT.getText(),PetButtonEnum.PET_BUTTON_NEXT.getCommand()));
@@ -104,12 +99,12 @@ public class CreateButtonService {
     }
 
     /**
-     *
-     * @param text
-     * @return
+     * Создание кнопки закончить разговор у пользователя
+     * @param text текст кнопки
+     * @return возвращает список объектов визуальной клавиатуры
      */
-    public List callToUser(String text){
-        List<Object> rowsInLine;
+    public List<List<InlineKeyboardButton>> callToUser(String text){
+        List<List<InlineKeyboardButton>> rowsInLine;
         List<InlineKeyboardButton> rowInLine = new ArrayList<>();
         rowInLine.add(createButton(text, "close_call"));
         rowsInLine = List.of(rowInLine);

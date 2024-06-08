@@ -19,12 +19,12 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import pro.sky.animal_shelter.enums.BotCommandEnum;
 import pro.sky.animal_shelter.model.Call;
 import pro.sky.animal_shelter.model.Repositories.CallRepository;
 import pro.sky.animal_shelter.service.ReportService;
 import pro.sky.animal_shelter.service.UserStatusService;
 
-import static pro.sky.animal_shelter.enums.BotCommandEnum.*;
 import static pro.sky.animal_shelter.enums.UserSatausEnum.*;
 
 
@@ -51,18 +51,14 @@ public class TelegramBot extends TelegramLongPollingBot {
         this.userStatusService = userStatusService;
         this.reportService = reportService;
         List<BotCommand> botCommandList = new ArrayList<>();
-        // добавление кнопок меню
-        botCommandList.add(new BotCommand(START.toString(),"get welcome message"));
-        botCommandList.add(new BotCommand(ABOUT.toString(),"find out information about the nursery"));
-        botCommandList.add(new BotCommand(INFO.toString(),"information about animals and rules"));
-        botCommandList.add(new BotCommand(PET_REPORT_FORM.toString(),"animal report form"));
-        botCommandList.add(new BotCommand(TO_CALL_A_VOLUNTEER.toString(),"call a volunteer"));
-        botCommandList.add(new BotCommand(CONTACT_INFORMATION.toString(),"feedback"));
-        botCommandList.add(new BotCommand(PET_LIST.toString(),"view all pets"));
+        BotCommandEnum[] botCommandEnums = BotCommandEnum.values();
+        for (BotCommandEnum botCommandEnum : botCommandEnums) {
+            botCommandList.add(new BotCommand(botCommandEnum.url(), botCommandEnum.description()));
+        }
         try{
             this.execute(new SetMyCommands(botCommandList, new BotCommandScopeDefault(), null));
         } catch (TelegramApiException e){
-            log.error("Error setting bot's command list: " + e.getMessage());
+            log.error("Error setting bots command list: " + e.getMessage());
         }
     }
     @PostConstruct

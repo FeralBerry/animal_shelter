@@ -32,6 +32,11 @@ public class ButtonService {
         this.messageUtils = messageUtils;
     }
 
+    /**
+     * Метод распределения генерации кнопок от статуса пользователя администратор или пользователь
+     * @param update объект параметров запроса из телеграм бота
+     * @return возвращает список сообщений содержащий кнопок (марк ап), которые надо отправить пользователю
+     */
     public List<SendMessage> defineCommand(Update update){
         if (adminService.checkAdmin(update.getCallbackQuery().getMessage().getChatId())){
             return ifAdmin(update);
