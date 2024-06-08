@@ -44,7 +44,6 @@ public class ReportService {
             ReportImg reportImg = new ReportImg();
             reportImg.setPetId(pet.getId());
             reportImg.setChatId(user.getChatId());
-            reportImg.setChatId(user.getChatId());
             reportImg.setFileId(photo);
             list.add(reportImg);
         }
@@ -125,10 +124,7 @@ public class ReportService {
      * @return возвращает отчет по id или null если такого отчета нет
      */
     public Report getReport(long id){
-        Report report = getReportById(id);
-        report.setLooked(true);
-        reportRepository.save(report);
-        return report;
+        return getReportById(id);
     }
 
     /**
@@ -165,7 +161,7 @@ public class ReportService {
      */
     public SendMessage increaseTheAdaptationPeriod14Day(long id) {
         SendMessage sendMessage = new SendMessage();
-        long chatId = getReportById(id).getChatId();
+        long chatId = reportRepository.findByChatId(id).getChatId();
         long nowSec = (new Date().getTime())/1000;
         Adoption adoption = adoptionRepository.findByUser(getUserById(chatId));
         adoption.setAdoptAt(nowSec + 14*24*60*60);
@@ -184,7 +180,7 @@ public class ReportService {
      */
     public SendMessage increaseTheAdaptationPeriod30Day(long id) {
         SendMessage sendMessage = new SendMessage();
-        long chatId = getReportById(id).getChatId();
+        long chatId = reportRepository.findByChatId(id).getChatId();
         long nowSec = (new Date().getTime())/1000;
         Adoption adoption = adoptionRepository.findByUser(getUserById(chatId));
         adoption.setAdoptAt(nowSec + 30*24*60*60);
