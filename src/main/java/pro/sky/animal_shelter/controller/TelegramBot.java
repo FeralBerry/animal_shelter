@@ -148,10 +148,11 @@ public class TelegramBot extends TelegramLongPollingBot {
     public void closeChat(){
         long nowSec = (new Date().getTime())/1000;
         Call call;
-        for (int i = 0; i < callRepository.findByChatUpdatedBefore(nowSec).size(); i++){
-            call = callRepository.findByChatUpdatedBefore(nowSec).get(i);
-            if((call.getUpdatedAt() + 3600L) > nowSec
-                    || !userStatusService.getUserStatus(call.getUserChatId()).equals(CALL_A_VOLUNTEER.getStatus())){
+        List<Call> callList = callRepository.findByChatUpdatedBefore(nowSec);
+        for (Call value : callList) {
+            call = value;
+            if ((call.getUpdatedAt() + 3600L) > nowSec
+                    || !userStatusService.getUserStatus(call.getUserChatId()).equals(CALL_A_VOLUNTEER.getStatus())) {
                 callRepository.delete(call);
                 userStatusService.changeUserStatus(call.getUserChatId(), NO_STATUS.getStatus());
                 SendMessage message = new SendMessage();
