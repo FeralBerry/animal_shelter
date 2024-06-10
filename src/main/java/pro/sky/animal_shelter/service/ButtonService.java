@@ -3,8 +3,10 @@ package pro.sky.animal_shelter.service;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import pro.sky.animal_shelter.model.Call;
 import pro.sky.animal_shelter.model.ContactInformation;
 import pro.sky.animal_shelter.model.Pet;
+import pro.sky.animal_shelter.model.Repositories.CallRepository;
 import pro.sky.animal_shelter.utils.MessageUtils;
 
 import java.util.ArrayList;
@@ -18,13 +20,15 @@ import static pro.sky.animal_shelter.enums.PetButtonEnum.*;
 
 @Service
 public class ButtonService {
+    private final CallRepository callRepository;
     private final AdminService adminService;
     private final ContactInformationService contactInformationService;
     private final UserStatusService userStatusService;
     private final PetService petService;
     private final MessageUtils messageUtils;
 
-    public ButtonService(AdminService adminService, ContactInformationService contactInformationService, UserStatusService userStatusService, PetService petService, MessageUtils messageUtils) {
+    public ButtonService(CallRepository callRepository, AdminService adminService, ContactInformationService contactInformationService, UserStatusService userStatusService, PetService petService, MessageUtils messageUtils) {
+        this.callRepository = callRepository;
         this.adminService = adminService;
         this.contactInformationService = contactInformationService;
         this.userStatusService = userStatusService;
@@ -81,7 +85,7 @@ public class ButtonService {
             sendMessage.setText("Введите правила как забрать животное из приюта.");
             sendMessageList.add(sendMessage);
         } else if(callBackData.equals(PET_BUTTON_PREV.getCommand())) {
-            SendMessage sendMessage;
+            var sendMessage = new SendMessage();
             Pet petView = petService.getPet(update);
             String description = petView.getDescription();
             String petName = petView.getPetName();
@@ -90,13 +94,24 @@ public class ButtonService {
             sendMessage.setText(petName + "\n" + description);
             sendMessageList.add(sendMessage);
         } else if(callBackData.equals(PET_BUTTON_NEXT.getCommand())) {
-            SendMessage sendMessage;
+            var sendMessage = new SendMessage();
             Pet petView = petService.getPet(update);
             String description = petView.getDescription();
             String petName = petView.getPetName();
             sendMessage = messageUtils.generateSendButton(chatId,"");
             sendMessage.setChatId(chatId);
             sendMessage.setText(petName + "\n" + description);
+            sendMessageList.add(sendMessage);
+        } else if(callBackData.equals("close_call")){
+            var sendMessage = new SendMessage();
+            userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Чат с пользователем был закрыт");
+            sendMessageList.add(sendMessage);
+            Call call = callRepository.findByAdminChatId(chatId);
+            userStatusService.changeUserStatus(call.getUserChatId(), NO_STATUS.getStatus());
+            sendMessage.setChatId(call.getUserChatId());
+            sendMessage.setText("Чат был закрыт для нового обращения /to_call_a_volunteer");
             sendMessageList.add(sendMessage);
         }
         return sendMessageList;
@@ -105,6 +120,7 @@ public class ButtonService {
         String callBackData = update.getCallbackQuery().getData();
         long chatId = update.getCallbackQuery().getFrom().getId();
         List<SendMessage> sendMessageList = new ArrayList<>();
+        var sendMessage = new SendMessage();
         // реакции на кнопки пользователя
         if(callBackData.equals(PET_REPORT.getCommand())){
             // переключить статус пользователя
@@ -118,7 +134,6 @@ public class ButtonService {
             // присылает в каком виде надо отсылать контактную информацию
             sendMessageList.add(messageUtils.generateSendMessage(update, contactInformationService.getContactInformation()));
         } else if(callBackData.equals(PET_BUTTON_PREV.getCommand())) {
-            SendMessage sendMessage;
             Pet petView = petService.getPet(update);
             String description = petView.getDescription();
             String petName = petView.getPetName();
@@ -127,13 +142,22 @@ public class ButtonService {
             sendMessage.setText(petName + "\n" + description);
             sendMessageList.add(sendMessage);
         } else if(callBackData.equals(PET_BUTTON_NEXT.getCommand())) {
-            SendMessage sendMessage;
             Pet petView = petService.getPet(update);
             String description = petView.getDescription();
             String petName = petView.getPetName();
             sendMessage = messageUtils.generateSendButton(chatId,"");
             sendMessage.setChatId(chatId);
             sendMessage.setText(petName + "\n" + description);
+            sendMessageList.add(sendMessage);
+        } else if(callBackData.equals("close_call")){
+            userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Чат с пользователем был закрыт");
+            sendMessageList.add(sendMessage);
+            Call call = callRepository.findByUserChatId(chatId);
+            userStatusService.changeUserStatus(call.getAdminChatId(), NO_STATUS.getStatus());
+            sendMessage.setChatId(call.getAdminChatId());
+            sendMessage.setText("Чат был закрыт для нового обращения /to_call_a_volunteer");
             sendMessageList.add(sendMessage);
         }
         return sendMessageList;

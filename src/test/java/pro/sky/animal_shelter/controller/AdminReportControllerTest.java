@@ -124,7 +124,7 @@ class AdminReportControllerTest {
                 .when(reportRepository)
                 .save(report);
         mockMvc.perform(MockMvcRequestBuilders
-                        .get("/api/admin//check/report/" + id)
+                        .get("/api/admin/check/report/" + id)
                         .content(jsonObject.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
