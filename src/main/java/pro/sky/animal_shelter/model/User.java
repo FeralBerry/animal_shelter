@@ -1,21 +1,33 @@
 package pro.sky.animal_shelter.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Objects;
 
 @Entity(name = "users")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class User {
     @Id
     private Long chatId;
+    @Column(length = 100)
     private String firstName;
+    @Column(length = 100)
     private String lastName;
+    @Column(length = 100)
     private String userName;
+    @Column(length = 10)
     private String role;
+    @Column(length = 50)
     private String locationUserOnApp;
-    private long petId;
-    private long addedPetId;
+    @OneToOne
+    private Pet pet;
+    @OneToOne
+    private Pet addedPet;
     public Long getChatId() {
         return chatId;
     }
@@ -33,9 +45,6 @@ public class User {
     }
     public String getRole() {
         return role;
-    }
-    public long getPetId() {
-        return petId;
     }
     public void setChatId(Long chatId) {
         this.chatId = chatId;
@@ -55,16 +64,21 @@ public class User {
     public void setLocationUserOnApp(String locationUserOnApp){
         this.locationUserOnApp = locationUserOnApp;
     }
-    public void setPetId(long petId){
-        this.petId = petId;
+
+    public Pet getPetId() {
+        return pet;
     }
 
-    public long getAddedPetId() {
-        return addedPetId;
+    public void setPetId(Pet pet) {
+        this.pet = pet;
     }
 
-    public void setAddedPetId(long addedPetId) {
-        this.addedPetId = addedPetId;
+    public Pet getAddedPetId() {
+        return addedPet;
+    }
+
+    public void setAddedPetId(Pet addedPet) {
+        this.addedPet = addedPet;
     }
 
     @Override
@@ -72,12 +86,12 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return petId == user.petId && addedPetId == user.addedPetId && Objects.equals(chatId, user.chatId) && Objects.equals(firstName, user.firstName) && Objects.equals(lastName, user.lastName) && Objects.equals(userName, user.userName) && Objects.equals(role, user.role) && Objects.equals(locationUserOnApp, user.locationUserOnApp);
+        return pet == user.pet && addedPet == user.addedPet && Objects.equals(chatId, user.chatId) && Objects.equals(firstName, user.firstName) && Objects.equals(lastName, user.lastName) && Objects.equals(userName, user.userName) && Objects.equals(role, user.role) && Objects.equals(locationUserOnApp, user.locationUserOnApp);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(chatId, firstName, lastName, userName, role, locationUserOnApp, petId, addedPetId);
+        return Objects.hash(chatId, firstName, lastName, userName, role, locationUserOnApp, pet, addedPet);
     }
 
     @Override
@@ -89,8 +103,8 @@ public class User {
                 ", userName='" + userName + '\'' +
                 ", role='" + role + '\'' +
                 ", locationUserOnApp='" + locationUserOnApp + '\'' +
-                ", petId=" + petId +
-                ", addedPetId=" + addedPetId +
+                ", petId=" + pet +
+                ", addedPetId=" + addedPet +
                 '}';
     }
 }

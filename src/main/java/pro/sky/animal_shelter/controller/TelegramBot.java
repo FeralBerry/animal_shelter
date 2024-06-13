@@ -22,6 +22,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import pro.sky.animal_shelter.enums.BotCommandEnum;
 import pro.sky.animal_shelter.model.Call;
 import pro.sky.animal_shelter.model.Repositories.CallRepository;
+import pro.sky.animal_shelter.model.User;
 import pro.sky.animal_shelter.service.ReportService;
 import pro.sky.animal_shelter.service.UserStatusService;
 
@@ -152,15 +153,15 @@ public class TelegramBot extends TelegramLongPollingBot {
         for (Call value : callList) {
             call = value;
             if ((call.getUpdatedAt() + 3600L) > nowSec
-                    || !userStatusService.getUserStatus(call.getUserChatId()).equals(CALL_A_VOLUNTEER.getStatus())) {
+                    || !userStatusService.getUserStatus(call.getUserChatId().getChatId()).equals(CALL_A_VOLUNTEER.getStatus())) {
                 callRepository.delete(call);
-                userStatusService.changeUserStatus(call.getUserChatId(), NO_STATUS.getStatus());
+                userStatusService.changeUserStatus(call.getUserChatId().getChatId(), NO_STATUS.getStatus());
                 SendMessage message = new SendMessage();
-                message.setChatId(call.getUserChatId());
+                message.setChatId(call.getUserChatId().getChatId());
                 message.setText("Чат закрыт автоматически для нового обращения /to_call_a_volunteer");
                 sendAnswerMessage(message);
-                userStatusService.changeUserStatus(call.getAdminChatId(), NO_STATUS.getStatus());
-                message.setChatId(call.getAdminChatId());
+                userStatusService.changeUserStatus(call.getAdminChatId().getChatId(), NO_STATUS.getStatus());
+                message.setChatId(call.getAdminChatId().getChatId());
                 message.setText("Чат с пользователем был закрыт");
                 sendAnswerMessage(message);
             }
@@ -168,11 +169,11 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
     @Scheduled(cron = "0 0 21 * * *")
     public void alarmReport(){
-        List<Long> chatIds = reportService.alarmReport();
+        List<User> chatIds = reportService.alarmReport();
         if(!chatIds.isEmpty()){
-            for (Long chatId : chatIds){
+            for (User chatId : chatIds){
                 SendMessage message = new SendMessage();
-                message.setChatId(chatId);
+                message.setChatId(chatId.getChatId());
                 message.setText("Вы забыли про отчет по питомцу");
                 sendAnswerMessage(message);
             }

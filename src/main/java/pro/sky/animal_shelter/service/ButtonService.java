@@ -109,8 +109,8 @@ public class ButtonService {
             sendMessage.setText("Чат с пользователем был закрыт");
             sendMessageList.add(sendMessage);
             Call call = callRepository.findByAdminChatId(chatId);
-            userStatusService.changeUserStatus(call.getUserChatId(), NO_STATUS.getStatus());
-            sendMessage.setChatId(call.getUserChatId());
+            userStatusService.changeUserStatus(call.getUserChatId().getChatId(), NO_STATUS.getStatus());
+            sendMessage.setChatId(call.getUserChatId().getChatId());
             sendMessage.setText("Чат был закрыт для нового обращения /to_call_a_volunteer");
             sendMessageList.add(sendMessage);
         }
@@ -155,8 +155,8 @@ public class ButtonService {
             sendMessage.setText("Чат с пользователем был закрыт");
             sendMessageList.add(sendMessage);
             Call call = callRepository.findByUserChatId(chatId);
-            userStatusService.changeUserStatus(call.getAdminChatId(), NO_STATUS.getStatus());
-            sendMessage.setChatId(call.getAdminChatId());
+            userStatusService.changeUserStatus(call.getAdminChatId().getChatId(), NO_STATUS.getStatus());
+            sendMessage.setChatId(call.getAdminChatId().getChatId());
             sendMessage.setText("Чат был закрыт для нового обращения /to_call_a_volunteer");
             sendMessageList.add(sendMessage);
         }

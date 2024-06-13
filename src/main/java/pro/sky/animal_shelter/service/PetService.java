@@ -59,8 +59,8 @@ public class PetService {
      */
     public Pet getPet(Update update){
         User newUser = getUserById(update.getMessage().getChatId());
-        long lastViewPetId = newUser.getPetId();
-        return checkPet(lastViewPetId,newUser);
+        Pet lastViewPetId = newUser.getPetId();
+        return checkPet(lastViewPetId.getId(),newUser);
     }
 
     /**
@@ -74,11 +74,11 @@ public class PetService {
             return null;
         } else {
             if(lastViewPetId == 0 || petRepository.findById(lastViewPetId).isEmpty()){
-                newUser.setPetId(petRepository.findLimitPet().getId());
+                newUser.setPetId(petRepository.findLimitPet());
                 userRepository.save(newUser);
                 return petRepository.findLimitPet();
             } else {
-                newUser.setPetId(petRepository.findById(lastViewPetId).get().getId());
+                newUser.setPetId(petRepository.findById(lastViewPetId).get());
                 userRepository.save(newUser);
                 return petRepository.findById(lastViewPetId).get();
             }
@@ -105,7 +105,7 @@ public class PetService {
                     user.setLastName(i.getLastName());
                     user.setUserName(i.getUserName());
                     user.setLocationUserOnApp(PET_ADD_NAME.getStatus());
-                    user.setAddedPetId(pet.getId());
+                    user.setAddedPetId(pet);
                 });
         userRepository.save(user);
     }
@@ -130,10 +130,10 @@ public class PetService {
      */
     public void changeNextPetView(long chatId){
         User user = getUserById(chatId);
-        long lastViewPetId = user.getPetId();
-        long lastPetId = petRepository.findIdLastPet();
-        if(lastViewPetId < lastPetId){
-            user.setPetId(petRepository.findNextPet(lastViewPetId).getId());
+        Pet lastViewPetId = user.getPetId();
+        Pet lastPetId = petRepository.findIdLastPet();
+        if(lastViewPetId.getId() < lastPetId.getId()){
+            user.setPetId(petRepository.findNextPet(lastViewPetId.getId()));
             userRepository.save(user);
         } else {
             user.setPetId(petRepository.findIdFirstPet());
@@ -147,10 +147,10 @@ public class PetService {
      */
     public void changePrevPetView(long chatId) {
         User user = getUserById(chatId);
-        long lastViewPetId = user.getPetId();
-        long firstPetId = petRepository.findIdFirstPet();
+        Pet lastViewPetId = user.getPetId();
+        Pet firstPetId = petRepository.findIdFirstPet();
         if (lastViewPetId != firstPetId) {
-            user.setPetId(petRepository.findPrevPet(lastViewPetId).getId());
+            user.setPetId(petRepository.findPrevPet(lastViewPetId.getId()));
             userRepository.save(user);
         } else {
             user.setPetId(petRepository.findIdLastPet());
@@ -163,7 +163,7 @@ public class PetService {
      * @param chatId id пользователя заполняющего информацию о животном
      */
     public void addPetImages(long chatId,List<String> photos){
-        long petId = getUserById(chatId).getAddedPetId();
+        Pet petId = getUserById(chatId).getAddedPetId();
         List <PetsImg> list = new ArrayList<>();
         for (String photo : photos){
             PetsImg petsImg = new PetsImg();
@@ -180,8 +180,8 @@ public class PetService {
      * @param description описание животного получаемое из чата с ботом
      */
     public void addPetDescription(long chatId,String description){
-        long petId = getUserById(chatId).getAddedPetId();
-        Pet pet = getPetById(petId);
+        Pet petId = getUserById(chatId).getAddedPetId();
+        Pet pet = getPetById(petId.getId());
         System.out.println(pet);
         pet.setDescription(description);
         petRepository.save(pet);

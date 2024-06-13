@@ -1,9 +1,6 @@
 package pro.sky.animal_shelter.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.util.Objects;
 
@@ -12,8 +9,11 @@ public class ContactInformation {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
-    private Long chatId;
+    @OneToOne
+    private User user;
+    @Column(name = "phone", length = 20)
     private String phone;
+    @Column(name = "name")
     private String name;
     public void setId(Long id) {
         this.id = id;
@@ -21,9 +21,7 @@ public class ContactInformation {
     public Long getId() {
         return id;
     }
-    public Long getChatId() {
-        return chatId;
-    }
+
     public String getName() {
         return name;
     }
@@ -33,8 +31,13 @@ public class ContactInformation {
     public void setPhone(String phone) {
         this.phone = phone;
     }
-    public void setChatId(Long chatId) {
-        this.chatId = chatId;
+
+    public User getChatId() {
+        return user;
+    }
+
+    public void setChatId(User user) {
+        this.user = user;
     }
 
     public void setName(String name) {

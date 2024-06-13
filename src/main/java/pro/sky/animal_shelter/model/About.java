@@ -1,9 +1,6 @@
 package pro.sky.animal_shelter.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.util.Objects;
 
@@ -12,9 +9,13 @@ public class About {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "shelter_name", length = 100)
     private String shelterName;
+    @Column(name = "schedule")
     private String schedule;
+    @Column(name = "security_contacts")
     private String securityContacts;
+    @Column(name = "safety_precautions")
     private String safetyPrecautions;
     public Long getId() {
         return id;
