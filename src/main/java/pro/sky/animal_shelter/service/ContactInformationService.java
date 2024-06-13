@@ -39,7 +39,7 @@ public class ContactInformationService {
         Pattern pattern = Pattern.compile("^(\\+\\d{1,3}( )?)?((\\(\\d{3}\\))|\\d{3})[- .]?\\d{3}[- .]?\\d{2}[- .]?\\d{2}$");
         Matcher matcher = pattern.matcher(message);
         ContactInformation contactInformation = new ContactInformation();
-        User user = new User();
+        User user;
         if(userRepository.findById(chatId).isPresent()){
             user = userRepository.findById(chatId).get();
         } else {
