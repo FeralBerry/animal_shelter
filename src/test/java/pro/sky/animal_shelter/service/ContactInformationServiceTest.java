@@ -12,6 +12,8 @@ import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import pro.sky.animal_shelter.model.ContactInformation;
 import pro.sky.animal_shelter.model.Repositories.ContactInformationRepository;
+import pro.sky.animal_shelter.model.Repositories.UserRepository;
+import pro.sky.animal_shelter.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +26,9 @@ class ContactInformationServiceTest {
     Update update = new Update();
     @Mock
     ContactInformationRepository contactInformationRepository;
-    ContactInformationService contactInformationService = new ContactInformationService(contactInformationRepository);
+    @Mock
+    UserRepository userRepository;
+    ContactInformationService contactInformationService = new ContactInformationService(userRepository, contactInformationRepository);
     ContactInformationService contactInformationServiceMock = Mockito.mock(ContactInformationService.class);
     @Test
     void getContactInformation() {
@@ -77,15 +81,18 @@ class ContactInformationServiceTest {
         assertEquals("Обратная связь под id не найдена",contactInformationServiceMock.deleteContactInformationById(index));
     }
     static Stream<Arguments> contacts(){
+        User user = new User();
+        user.setChatId(1L);
         ContactInformation contactInformation = new ContactInformation();
         contactInformation.setId(1L);
         contactInformation.setName("Имя");
-        contactInformation.setChatId(1L);
+        contactInformation.setChatId(user);
         contactInformation.setPhone("телефон");
         ContactInformation contactInformation1 = new ContactInformation();
+        user.setChatId(2L);
         contactInformation.setId(2L);
         contactInformation.setName("Имя");
-        contactInformation.setChatId(2L);
+        contactInformation.setChatId(user);
         contactInformation.setPhone("телефон");
         return Stream.of(
                 Arguments.of(List.of(

@@ -139,15 +139,21 @@ class TelegramBotTest {
     void closeChat() {
         long nowSec = (new Date().getTime())/1000;
         Call call = new Call();
+        pro.sky.animal_shelter.model.User user = new pro.sky.animal_shelter.model.User();
+        user.setChatId(1L);
+        pro.sky.animal_shelter.model.User admin = new pro.sky.animal_shelter.model.User();
+        admin.setChatId(2L);
         List<Call> callList = new ArrayList<>();
         call.setUpdatedAt(1L);
-        call.setUserChatId(1L);
-        call.setAdminChatId(2L);
+        call.setUserChatId(user);
+        call.setAdminChatId(admin);
         call.setId(1L);
         callList.add(call);
         call.setUpdatedAt(2L);
-        call.setUserChatId(3L);
-        call.setAdminChatId(4L);
+        user.setChatId(3L);
+        admin.setChatId(4L);
+        call.setUserChatId(user);
+        call.setAdminChatId(admin);
         call.setId(2L);
         callList.add(call);
         doReturn(callList)
@@ -158,34 +164,34 @@ class TelegramBotTest {
             call = expectedCallList.get(i);
             doReturn(CALL_A_VOLUNTEER.getStatus())
                     .when(userStatusService)
-                    .getUserStatus(call.getUserChatId());
+                    .getUserStatus(call.getUserChatId().getChatId());
             if((call.getUpdatedAt() + 3600L) > nowSec
-                    || !userStatusService.getUserStatus(call.getUserChatId()).equals(CALL_A_VOLUNTEER.getStatus())){
+                    || !userStatusService.getUserStatus(call.getUserChatId().getChatId()).equals(CALL_A_VOLUNTEER.getStatus())){
                 doReturn(expectedCallList.remove(call))
                         .when(callRepository)
                         .delete(call);
                 callRepository.delete(call);
                 doReturn(NO_STATUS.getStatus())
                         .when(userStatusService)
-                        .getUserStatus(call.getUserChatId());
-                doReturn(userStatusService.getUserStatus(call.getUserChatId()))
+                        .getUserStatus(call.getUserChatId().getChatId());
+                doReturn(userStatusService.getUserStatus(call.getUserChatId().getChatId()))
                         .when(userStatusService)
-                        .changeUserStatus(call.getUserChatId(), NO_STATUS.getStatus());
-                userStatusService.changeUserStatus(call.getUserChatId(), NO_STATUS.getStatus());
+                        .changeUserStatus(call.getUserChatId().getChatId(), NO_STATUS.getStatus());
+                userStatusService.changeUserStatus(call.getUserChatId().getChatId(), NO_STATUS.getStatus());
                 SendMessage message = new SendMessage();
-                message.setChatId(call.getUserChatId());
+                message.setChatId(call.getUserChatId().getChatId());
                 message.setText("Чат закрыт автоматически для нового обращения /to_call_a_volunteer");
                 doNothing()
                         .when(telegramBot)
                         .sendAnswerMessage(message);
                 doReturn(NO_STATUS.getStatus())
                         .when(userStatusService)
-                        .getUserStatus(call.getAdminChatId());
-                doReturn(userStatusService.getUserStatus(call.getAdminChatId()))
+                        .getUserStatus(call.getAdminChatId().getChatId());
+                doReturn(userStatusService.getUserStatus(call.getAdminChatId().getChatId()))
                         .when(userStatusService)
-                        .changeUserStatus(call.getAdminChatId(), NO_STATUS.getStatus());
-                userStatusService.changeUserStatus(call.getAdminChatId(), NO_STATUS.getStatus());
-                message.setChatId(call.getAdminChatId());
+                        .changeUserStatus(call.getAdminChatId().getChatId(), NO_STATUS.getStatus());
+                userStatusService.changeUserStatus(call.getAdminChatId().getChatId(), NO_STATUS.getStatus());
+                message.setChatId(call.getAdminChatId().getChatId());
                 message.setText("Чат с пользователем был закрыт");
                 doNothing()
                         .when(telegramBot)
@@ -197,11 +203,11 @@ class TelegramBotTest {
 
     @Test
     void alarmReport() {
-        List<Long> chatIds = reportService.alarmReport();
+        List<pro.sky.animal_shelter.model.User> chatIds = reportService.alarmReport();
         if(!chatIds.isEmpty()){
-            for (Long chatId : chatIds){
+            for (pro.sky.animal_shelter.model.User chatId : chatIds){
                 SendMessage message = new SendMessage();
-                message.setChatId(chatId);
+                message.setChatId(chatId.getChatId());
                 message.setText("Вы забыли про отчет по питомцу");
                 doNothing()
                         .when(telegramBot)

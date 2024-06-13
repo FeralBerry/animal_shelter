@@ -42,8 +42,8 @@ public class ReportService {
         List <ReportImg> list = new ArrayList<>();
         for (String photo : photos){
             ReportImg reportImg = new ReportImg();
-            reportImg.setPetId(pet.getId());
-            reportImg.setChatId(user.getChatId());
+            reportImg.setPetId(pet);
+            reportImg.setChatId(user);
             reportImg.setFileId(photo);
             list.add(reportImg);
         }
@@ -59,9 +59,9 @@ public class ReportService {
         Pet pet = adoptionRepository.findByUser(getUserById(chatId)).getPet();
         String text = update.getMessage().getText();
         Report report = new Report();
-        report.setChatId(user.getChatId());
+        report.setChatId(user);
         report.setText(text);
-        report.setPetId(pet.getId());
+        report.setPetId(pet);
         report.setUpdatedAt(nowSec);
         reportRepository.save(report);
     }
@@ -69,16 +69,16 @@ public class ReportService {
      * Метод проверяет список сдавших отчет за последние 24 часа со списком усыновивших
      * @return список не сдавших отчет из усыновивших
      */
-    public List<Long> alarmReport(){
+    public List<User> alarmReport(){
         long nowSec = (new Date().getTime())/1000;
         List<Report> reports = reportRepository.findByUpdatedAt(nowSec - 60*60*24);
-        List<Long> listReportChatIds = new ArrayList<>();
-        List<Long> adoptionChatId = adoptionChatId();
+        List<User> listReportChatIds = new ArrayList<>();
+        List<User> adoptionChatId = adoptionChatId();
         for (Report report : reports){
             listReportChatIds.add(report.getChatId());
         }
         for (int i = 0; i < adoptionChatId.size();i++){
-            for (Long listReportChatId : listReportChatIds) {
+            for (User listReportChatId : listReportChatIds) {
                 if (Objects.equals(adoptionChatId.get(i), listReportChatId)) {
                     adoptionChatId.remove(i);
                 }
@@ -93,11 +93,11 @@ public class ReportService {
      * прошел срок адаптации животного приходит сообщение с поздравлением.
      * @return список кем усыновлены животные
      */
-    public List<Long> adoptionChatId(){
+    public List<User> adoptionChatId(){
         long nowSec = (new Date().getTime())/1000;
         List<Adoption> adoptions = adoptionRepository.findAll();
         SendMessage sendMessage = new SendMessage();
-        List<Long> listChatIds = new ArrayList<>();
+        List<User> listChatIds = new ArrayList<>();
         for (Adoption adoption : adoptions){
             if((nowSec - adoption.getAdoptAt()) < 14*24*60*60){
                 sendMessage.setChatId(adoption.getUser().getChatId());
@@ -105,7 +105,7 @@ public class ReportService {
                 setView(sendMessage);
                 adoptionRepository.delete(adoption);
             } else {
-                listChatIds.add(adoption.getUser().getChatId());
+                listChatIds.add(adoption.getUser());
             }
         }
         return listChatIds;
@@ -144,7 +144,7 @@ public class ReportService {
      */
     public SendMessage incorrectReportById(long id){
         SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(getReportById(id).getChatId());
+        sendMessage.setChatId(getReportById(id).getChatId().getChatId());
         sendMessage.setText("Дорогой усыновитель, мы заметили, что ты заполняешь отчет " +
                 "не так подробно, как необходимо. Пожалуйста, подойди ответственнее к этому занятию. " +
                 "В противном случае волонтеры приюта будут обязаны самолично проверять условия содержания животного");
@@ -161,7 +161,7 @@ public class ReportService {
      */
     public SendMessage increaseTheAdaptationPeriod14Day(long id) {
         SendMessage sendMessage = new SendMessage();
-        long chatId = reportRepository.findByChatId(id).getChatId();
+        long chatId = reportRepository.findByChatId(id).getChatId().getChatId();
         long nowSec = (new Date().getTime())/1000;
         Adoption adoption = adoptionRepository.findByUser(getUserById(chatId));
         adoption.setAdoptAt(nowSec + 14*24*60*60);
@@ -180,7 +180,7 @@ public class ReportService {
      */
     public SendMessage increaseTheAdaptationPeriod30Day(long id) {
         SendMessage sendMessage = new SendMessage();
-        long chatId = reportRepository.findByChatId(id).getChatId();
+        long chatId = reportRepository.findByChatId(id).getChatId().getChatId();
         long nowSec = (new Date().getTime())/1000;
         Adoption adoption = adoptionRepository.findByUser(getUserById(chatId));
         adoption.setAdoptAt(nowSec + 30*24*60*60);

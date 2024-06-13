@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import pro.sky.animal_shelter.model.Pet;
 import pro.sky.animal_shelter.model.PetsImg;
 import pro.sky.animal_shelter.model.Report;
 
@@ -144,49 +145,53 @@ class ReportServiceTest {
     }
     static Stream<Arguments> petImages(){
         PetsImg pet1 = new PetsImg();
+        Pet pet = new Pet();
         List<PetsImg> petsImgs1 = new ArrayList<>();
         {
+            pet.setId(1L);
             pet1.setId(1L);
             pet1.setFileId("1");
-            pet1.setPetId(1L);
+            pet1.setPetId(pet);
             petsImgs1.add(pet1);
             pet1.setId(2L);
             pet1.setFileId("2");
-            pet1.setPetId(1L);
+            pet1.setPetId(pet);
             petsImgs1.add(pet1);
             pet1.setId(3L);
             pet1.setFileId("3");
-            pet1.setPetId(1L);
+            pet1.setPetId(pet);
             petsImgs1.add(pet1);
         }
         List<PetsImg> petsImgs2 = new ArrayList<>();
         {
+            pet.setId(2L);
             pet1.setId(4L);
             pet1.setFileId("1");
-            pet1.setPetId(2L);
+            pet1.setPetId(pet);
             petsImgs2.add(pet1);
             pet1.setId(5L);
             pet1.setFileId("2");
-            pet1.setPetId(2L);
+            pet1.setPetId(pet);
             petsImgs2.add(pet1);
             pet1.setId(6L);
             pet1.setFileId("3");
-            pet1.setPetId(2L);
+            pet1.setPetId(pet);
             petsImgs2.add(pet1);
         }
         List<PetsImg> petsImgs3 = new ArrayList<>();
         {
+            pet.setId(3L);
             pet1.setId(7L);
             pet1.setFileId("1");
-            pet1.setPetId(3L);
+            pet1.setPetId(pet);
             petsImgs3.add(pet1);
             pet1.setId(8L);
             pet1.setFileId("2");
-            pet1.setPetId(3L);
+            pet1.setPetId(pet);
             petsImgs3.add(pet1);
             pet1.setId(9L);
             pet1.setFileId("3");
-            pet1.setPetId(3L);
+            pet1.setPetId(pet);
             petsImgs3.add(pet1);
         }
         return Stream.of(

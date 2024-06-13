@@ -13,6 +13,7 @@ public class Adoption {
     private Pet pet;
     @OneToOne
     private User user;
+    @Column(name = "adopt_at")
     private Long adoptAt;
 
     public Long getAdoptAt() {

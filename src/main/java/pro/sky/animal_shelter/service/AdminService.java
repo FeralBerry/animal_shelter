@@ -1,6 +1,8 @@
 package pro.sky.animal_shelter.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import pro.sky.animal_shelter.model.Repositories.UserRepository;

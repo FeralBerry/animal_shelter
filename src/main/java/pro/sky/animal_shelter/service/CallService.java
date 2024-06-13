@@ -56,8 +56,8 @@ public class CallService {
             log.info("admin change status: " + user);
             Call call = new Call();
             long nowSec = (new Date().getTime())/1000;
-            call.setAdminChatId(random.getChatId());
-            call.setUserChatId(chatId);
+            call.setAdminChatId(random);
+            call.setUserChatId(user);
             call.setUpdatedAt(nowSec);
             callRepository.save(call);
             log.info("created new call: " + call);
@@ -78,11 +78,11 @@ public class CallService {
         if(adminService.checkAdmin(chatId)){
             call = callRepository.findByUserChatId(chatId);
             call.setUpdatedAt(nowSec);
-            sendChatId = callRepository.findByUserChatId(chatId).getUserChatId();
+            sendChatId = callRepository.findByUserChatId(chatId).getUserChatId().getChatId();
         } else {
             call = callRepository.findByAdminChatId(chatId);
             call.setUpdatedAt(nowSec);
-            sendChatId = callRepository.findByAdminChatId(chatId).getAdminChatId();
+            sendChatId = callRepository.findByAdminChatId(chatId).getAdminChatId().getChatId();
         }
         callRepository.save(call);
         return sendChatId;

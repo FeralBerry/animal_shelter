@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import pro.sky.animal_shelter.model.ContactInformation;
 import pro.sky.animal_shelter.model.Repositories.ContactInformationRepository;
+import pro.sky.animal_shelter.model.Repositories.UserRepository;
+import pro.sky.animal_shelter.model.User;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -14,9 +16,11 @@ import java.util.regex.Pattern;
 @Slf4j
 @Service
 public class ContactInformationService {
+    private final UserRepository userRepository;
     private final static String MESSAGE= "Введите номер телефона в формате: +7-9**-***-**-**";
     private final ContactInformationRepository contactInformationRepository;
-    public ContactInformationService(ContactInformationRepository contactInformationRepository){
+    public ContactInformationService(UserRepository userRepository, ContactInformationRepository contactInformationRepository){
+        this.userRepository = userRepository;
         this.contactInformationRepository = contactInformationRepository;
     }
     /**
@@ -35,9 +39,15 @@ public class ContactInformationService {
         Pattern pattern = Pattern.compile("^(\\+\\d{1,3}( )?)?((\\(\\d{3}\\))|\\d{3})[- .]?\\d{3}[- .]?\\d{2}[- .]?\\d{2}$");
         Matcher matcher = pattern.matcher(message);
         ContactInformation contactInformation = new ContactInformation();
+        User user = new User();
+        if(userRepository.findById(chatId).isPresent()){
+            user = userRepository.findById(chatId).get();
+        } else {
+            throw new RuntimeException("Пользователя с таким id не существует");
+        }
         if(matcher.matches()){
             contactInformation.setPhone(message);
-            contactInformation.setChatId(chatId);
+            contactInformation.setChatId(user);
             contactInformationRepository.save(contactInformation);
             return true;
         }
