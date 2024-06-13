@@ -1,9 +1,6 @@
 package pro.sky.animal_shelter.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.util.Objects;
 
@@ -12,20 +9,16 @@ public class Call {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long userChatId;
-    private Long adminChatId;
+    @OneToOne
+    private User user;
+    @OneToOne
+    private User admin;
+    @Column(name = "updated_at")
     private Long updatedAt;
     public Long getId() {
         return id;
     }
 
-    public Long getUserChatId() {
-        return userChatId;
-    }
-
-    public Long getAdminChatId() {
-        return adminChatId;
-    }
     public Long getUpdatedAt() {
         return updatedAt;
     }
@@ -34,13 +27,22 @@ public class Call {
         this.id = id;
     }
 
-    public void setUserChatId(Long userChatId) {
-        this.userChatId = userChatId;
+    public User getUserChatId() {
+        return user;
     }
 
-    public void setAdminChatId(Long adminChatId) {
-        this.adminChatId = adminChatId;
+    public void setUserChatId(User user) {
+        this.user = user;
     }
+
+    public User getAdminChatId() {
+        return admin;
+    }
+
+    public void setAdminChatId(User admin) {
+        this.admin = admin;
+    }
+
     public void setUpdatedAt(Long updatedAt) {
         this.updatedAt = updatedAt;
     }
@@ -50,18 +52,18 @@ public class Call {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Call call = (Call) o;
-        return Objects.equals(id, call.id) && Objects.equals(userChatId, call.userChatId) && Objects.equals(adminChatId, call.adminChatId) && Objects.equals(updatedAt, call.updatedAt);
+        return Objects.equals(id, call.id) && Objects.equals(user, call.user) && Objects.equals(admin, call.admin) && Objects.equals(updatedAt, call.updatedAt);
     }
     @Override
     public int hashCode() {
-        return Objects.hash(id, userChatId, adminChatId, updatedAt);
+        return Objects.hash(id, user, admin, updatedAt);
     }
     @Override
     public String toString() {
         return "Call{" +
                 "id=" + id +
-                ", userChatId=" + userChatId +
-                ", adminChatId=" + adminChatId +
+                ", userChatId=" + user +
+                ", adminChatId=" + admin +
                 ", updatedAt=" + updatedAt +
                 '}';
     }

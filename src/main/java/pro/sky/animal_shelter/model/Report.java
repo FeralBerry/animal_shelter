@@ -4,16 +4,21 @@ import jakarta.persistence.*;
 
 import java.util.Objects;
 
-@Entity
+@Entity(name = "reports")
 public class Report {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
     private String text;
-    private Long chatId;
-    private Long petId;
+    @OneToOne
+    private User user;
+    @OneToOne
+    private Pet pet;
+    @Column(name = "updated_at")
     private Long updatedAt;
+    @Column(name = "checked")
     private boolean checked;
+    @Column(name = "looked")
     private boolean looked;
 
     public Long getId() {
@@ -32,20 +37,20 @@ public class Report {
         this.text = text;
     }
 
-    public Long getChatId() {
-        return chatId;
+    public User getChatId() {
+        return user;
     }
 
-    public void setChatId(Long chatId) {
-        this.chatId = chatId;
+    public void setChatId(User user) {
+        this.user = user;
     }
 
-    public Long getPetId() {
-        return petId;
+    public Pet getPetId() {
+        return pet;
     }
 
-    public void setPetId(Long petId) {
-        this.petId = petId;
+    public void setPetId(Pet pet) {
+        this.pet = pet;
     }
 
     public Long getUpdatedAt() {
@@ -69,12 +74,12 @@ public class Report {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Report report = (Report) o;
-        return Objects.equals(id, report.id) && Objects.equals(text, report.text) && Objects.equals(chatId, report.chatId) && Objects.equals(petId, report.petId);
+        return Objects.equals(id, report.id) && Objects.equals(text, report.text) && Objects.equals(user, report.user) && Objects.equals(pet, report.pet);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(id, text, chatId, petId);
+        int result = Objects.hash(id, text, user, pet);
         result = 31 * result;
         return result;
     }
@@ -93,8 +98,8 @@ public class Report {
         return "Report{" +
                 "id=" + id +
                 ", text='" + text + '\'' +
-                ", chatId=" + chatId +
-                ", petId=" + petId +
+                ", chatId=" + user +
+                ", petId=" + pet +
                 '}';
     }
 }

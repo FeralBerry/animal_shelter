@@ -51,7 +51,7 @@ public class UrlService {
         long chatId = update.getMessage().getChatId();
         String backMsg =  "Если хотите чтобы с Вами связались нажмите на ссылку или выберете пункт в меню /contact_information \n" +
                 "Если хотите связаться с волонтером нажмите на ссылку или выберете пункт в меню /to_call_a_volunteer";
-        if (message.equals(START.toString())) {
+        if (message.equals(START.url())) {
             startService.register(update.getMessage());
             if (adminService.checkAdmin(chatId)) {
                 String msg = "Главное меню администратора";
@@ -63,23 +63,23 @@ public class UrlService {
                 userStatusService.changeUserStatus(update, NO_STATUS.getStatus());
             }
         }
-        else if (message.equals(INFO.toString())) {
+        else if (message.equals(INFO.url())) {
             list.add(messageUtils.generateSendMessage(update,
                     helloMsg.append(info(update)).append(backMsg).toString()));
         }
-        else if (message.equals(ABOUT.toString())) {
+        else if (message.equals(ABOUT.url())) {
             list.add(messageUtils.generateSendMessage(update,
                     helloMsg.append(about(update)).append(backMsg).toString()));
         }
-        else if (message.equals(PET_REPORT_FORM.toString())) {
+        else if (message.equals(PET_REPORT_FORM.url())) {
             list.add(messageUtils.generateSendMessage(update,
                     petReportForm(update)));
         }
-        else if (message.equals(CONTACT_INFORMATION.toString())) {
+        else if (message.equals(CONTACT_INFORMATION.url())) {
             list.add(messageUtils.generateSendMessage(update,
                     contactInformation(update)));
         }
-        else if (message.equals(TO_CALL_A_VOLUNTEER.toString())) {
+        else if (message.equals(TO_CALL_A_VOLUNTEER.url())) {
             callVolunteer(update);
             if(callVolunteer(update) == 0){
                 list.add(messageUtils.generateSendMessage(update,
@@ -95,7 +95,7 @@ public class UrlService {
                 list.add(sendButton);
             }
         }
-        else if (message.equals(PET_LIST.toString())) {
+        else if (message.equals(PET_LIST.url())) {
             SendMessage sendMessage;
             Pet petView = petService.getPet(update);
             String description = petView.getDescription();

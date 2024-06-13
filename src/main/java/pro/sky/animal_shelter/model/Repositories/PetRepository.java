@@ -14,8 +14,8 @@ public interface PetRepository extends JpaRepository<Pet,Long> {
     Pet findNextPet(long id);
     @Query(value = "SELECT * FROM pets WHERE id < :id LIMIT 1", nativeQuery = true)
     Pet findPrevPet(long id);
-    @Query(value = "SELECT id FROM pets order by id asc limit 1",nativeQuery = true)
-    long findIdFirstPet();
-    @Query(value = "SELECT id FROM pets order by id desc limit 1",nativeQuery = true)
-    long findIdLastPet();
+    @Query(value = "SELECT * FROM pets order by id asc limit 1",nativeQuery = true)
+    Pet findIdFirstPet();
+    @Query(value = "SELECT * FROM pets order by id desc limit 1",nativeQuery = true)
+    Pet findIdLastPet();
 }

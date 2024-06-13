@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <include file="01-changeset-about-table.xml" relativeToChangelogFile="true"/>
+    <include file="02-changeset-info-table.xml" relativeToChangelogFile="true"/>
+    <include file="03-changeset-pets-table.xml" relativeToChangelogFile="true"/>
+    <include file="04-changeset-pets-img-table.xml" relativeToChangelogFile="true"/>
+    <include file="05-changeset-users-table.xml" relativeToChangelogFile="true"/>
+    <include file="06-changeset-contact-information-table.xml" relativeToChangelogFile="true"/>
+    <include file="07-changeset-adoptions-table.xml" relativeToChangelogFile="true"/>
+    <include file="08-changeset-calls-table.xml" relativeToChangelogFile="true"/>
+    <include file="09-changeset-reports-table.xml" relativeToChangelogFile="true"/>
+    <include file="10-changeset-reports-img-table.xml" relativeToChangelogFile="true"/>
+</databaseChangeLog>

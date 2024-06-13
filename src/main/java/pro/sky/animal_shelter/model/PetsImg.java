@@ -7,7 +7,9 @@ public class PetsImg {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long petId;
+    @ManyToOne
+    private Pet pet;
+    @Column(name = "file_id")
     private String fileId;
     public Long getId() {
         return id;
@@ -17,12 +19,12 @@ public class PetsImg {
         this.id = id;
     }
 
-    public Long getPetId() {
-        return petId;
+    public Pet getPetId() {
+        return pet;
     }
 
-    public void setPetId(long petId) {
-        this.petId = petId;
+    public void setPetId(Pet pet) {
+        this.pet = pet;
     }
 
     public String getFileId() {

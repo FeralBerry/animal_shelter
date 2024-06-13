@@ -7,7 +7,9 @@ public class Pet {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "pet_name", length = 100)
     private String petName;
+    @Column(name = "description")
     private String description;
     public Long getId() {
         return id;
