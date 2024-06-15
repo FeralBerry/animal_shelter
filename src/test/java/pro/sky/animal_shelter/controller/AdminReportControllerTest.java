@@ -52,9 +52,10 @@ class AdminReportControllerTest {
         jsonObject.put("looked",looked);
         List<Report> reportList = new ArrayList<>();
         Report report = new Report();
-        report.setChatId(id);
+        User user = new User();
+        report.setChatId(user);
         report.setText(text);
-        report.setChatId(chatId);
+        report.setChatId(user);
         report.setUpdatedAt(updatedAt);
         report.setChecked(checked);
         report.setLooked(looked);
@@ -91,9 +92,10 @@ class AdminReportControllerTest {
         jsonObject.put("checked",checked);
         jsonObject.put("looked",looked);
         Report report = new Report();
-        report.setChatId(id);
+        User user = new User();
+        report.setChatId(user);
         report.setText(text);
-        report.setChatId(chatId);
+        report.setChatId(user);
         report.setUpdatedAt(updatedAt);
         report.setChecked(checked);
         report.setLooked(looked);
@@ -153,10 +155,10 @@ class AdminReportControllerTest {
         User user = new User();
         doReturn(report)
                 .when(reportRepository)
-                .findByChatId(report.getChatId());
+                .findByChatId(report.getChatId().getChatId());
         doReturn(Optional.of(user))
                 .when(userRepository)
-                .findById(report.getChatId());
+                .findById(report.getChatId().getChatId());
         Adoption adoption = new Adoption();
         doReturn(adoption)
                 .when(adoptionRepository)
@@ -179,10 +181,10 @@ class AdminReportControllerTest {
         User user = new User();
         doReturn(report)
                 .when(reportRepository)
-                .findByChatId(report.getChatId());
+                .findByChatId(report.getChatId().getChatId());
         doReturn(Optional.of(user))
                 .when(userRepository)
-                .findById(report.getChatId());
+                .findById(report.getChatId().getChatId());
         Adoption adoption = new Adoption();
         doReturn(adoption)
                 .when(adoptionRepository)
@@ -213,9 +215,10 @@ class AdminReportControllerTest {
         jsonObject.put("checked",checked);
         jsonObject.put("looked",looked);
         Report report = new Report();
-        report.setChatId(id);
+        User user = new User();
+        report.setChatId(user);
         report.setText(text);
-        report.setChatId(chatId);
+        report.setChatId(user);
         report.setUpdatedAt(updatedAt);
         report.setChecked(checked);
         report.setLooked(looked);

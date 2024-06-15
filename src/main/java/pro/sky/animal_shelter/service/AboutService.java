@@ -41,7 +41,10 @@ public class AboutService {
      * @param text текст из чата с телеграмм ботом
      */
     public void addShelterName(String text){
-        About about = aboutRepository.findAbout();
+        About about = new About();
+        if(!aboutRepository.findAll().isEmpty()){
+            about = aboutRepository.findAbout();
+        }
         about.setShelterName(text);
         aboutRepository.save(about);
     }
@@ -50,7 +53,10 @@ public class AboutService {
      * @param text текст из чата с телеграмм ботом
      */
     public void addSchedule(String text){
-        About about = aboutRepository.findAbout();
+        About about = new About();
+        if(!aboutRepository.findAll().isEmpty()){
+            about = aboutRepository.findAbout();
+        }
         about.setSchedule(text);
         aboutRepository.save(about);
     }
@@ -59,7 +65,10 @@ public class AboutService {
      * @param text текст из чата с телеграмм ботом
      */
     public void addSecurityContacts(String text){
-        About about = aboutRepository.findAbout();
+        About about = new About();
+        if(!aboutRepository.findAll().isEmpty()){
+            about = aboutRepository.findAbout();
+        }
         about.setSecurityContacts(text);
         aboutRepository.save(about);
     }

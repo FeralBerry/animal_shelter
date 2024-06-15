@@ -1,39 +1,75 @@
 package pro.sky.animal_shelter.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import pro.sky.animal_shelter.model.Repositories.UserRepository;
+import pro.sky.animal_shelter.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-
+import static org.mockito.Mockito.*;
+@SpringBootTest
+@AutoConfigureMockMvc
 class AdminServiceTest {
+    @MockBean
+    UserRepository userRepository = Mockito.mock(UserRepository.class);
     Update update = new Update();
-    AdminService adminService = Mockito.mock(AdminService.class);
-
+    @Autowired
+    AdminService adminService;
+    @BeforeEach
+    void setUp(){
+        setUpdate();
+    }
     @Test
     void checkAdmin() {
-        setUpdate();
-        doReturn(true)
-                .when(adminService)
-                .checkAdmin(update.getMessage().getChatId());
-        assertTrue(adminService.checkAdmin(update.getMessage().getChatId()));
+        long chatId = update.getMessage().getChatId();
+        User user = new User();
+        user.setChatId(chatId);
+        user.setRole("admin");
+        doReturn(Optional.of(user))
+                .when(userRepository)
+                .findById(chatId);
+        assertTrue(adminService.checkAdmin(chatId));
     }
-
+    @Test
+    void checkUser(){
+        long chatId = update.getMessage().getChatId();
+        User user = new User();
+        user.setChatId(chatId);
+        user.setRole("");
+        doReturn(Optional.of(user))
+                .when(userRepository)
+                .findById(chatId);
+        assertFalse(adminService.checkAdmin(chatId));
+    }
     @Test
     void setRole() {
-        setUpdate();
-        doNothing()
-                .when(adminService)
-                .setRole(update.getMessage());
+        User user = new User();
+        Message message = update.getMessage();
+        user.setChatId(message.getChatId());
+        user.setFirstName(message.getChat().getFirstName());
+        user.setLastName(message.getChat().getLastName());
+        user.setUserName(message.getChat().getUserName());
+        user.setRole("admin");
+        adminService.setRole(update.getMessage());
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
+        assertEquals(captor.getValue(), user);
     }
+
     public void setUpdate(){
         update.setUpdateId(193484977);
         Message message = new Message();

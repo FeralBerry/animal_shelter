@@ -1,37 +1,117 @@
 package pro.sky.animal_shelter.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import pro.sky.animal_shelter.model.Call;
+import pro.sky.animal_shelter.model.Repositories.CallRepository;
+import pro.sky.animal_shelter.model.Repositories.UserRepository;
+import pro.sky.animal_shelter.model.User;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.*;
+import static pro.sky.animal_shelter.enums.UserSatausEnum.CALL_A_VOLUNTEER;
+import static pro.sky.animal_shelter.enums.UserSatausEnum.NO_STATUS;
 
+@SpringBootTest
+@AutoConfigureMockMvc
 class CallServiceTest {
+    @Mock
+    UserStatusService userStatusService;
+    @Mock
+    UserRepository userRepository;
+    @Mock
+    CallRepository callRepository;
+    @Mock
+    AdminService adminService;
+    CallService callService;
     Update update = new Update();
-    CallService callService = Mockito.mock(CallService.class);
-
-    @Test
-    void createCall() {
+    @BeforeEach
+    void setUp(){
         setUpdate();
-        doReturn(1L)
-                .when(callService)
-                .createCall(update);
-        assertEquals(1L,callService.createCall(update));
+        callService = new CallService(this.userStatusService,this.userRepository,this.adminService,this.callRepository);
     }
     @Test
-    void sendMessageChat() {
-        setUpdate();
-        doReturn(1L)
-                .when(callService)
-                .sendMessageChat(update.getMessage().getChatId());
-        assertEquals(1L,callService.sendMessageChat(update.getMessage().getChatId()));
+    void createCallPositive() {
+        doNothing()
+                .when(userStatusService)
+                .changeUserStatus(update.getMessage().getChatId(), CALL_A_VOLUNTEER.getStatus());
+        User admin = new User();
+        admin.setChatId(1L);
+        admin.setFirstName("1L");
+        admin.setLastName("1L");
+        admin.setUserName("1L");
+        admin.setRole("admin");
+        doReturn(List.of(admin))
+                .when(userRepository)
+                .findAllAdmin();
+        admin.setLocationUserOnApp("call");
+        User user = new User();
+        doReturn(Optional.of(user))
+                .when(userRepository)
+                .findById(update.getMessage().getChatId());
+        assertEquals(callService.createCall(update),admin.getChatId());
+    }
+    @Test
+    void createCallNegative() {
+        doNothing()
+                .when(userStatusService)
+                .changeUserStatus(update.getMessage().getChatId(), NO_STATUS.getStatus());
+        when(userRepository.findAllAdmin()).thenReturn(List.of());
+        assertNull(callService.createCall(update));
+    }
+    @Test
+    void sendMessageChatAdmin() {
+        long nowSec = (new Date().getTime())/1000;
+        doReturn(true)
+                .when(adminService)
+                .checkAdmin(update.getMessage().getChatId());
+        Call call = new Call();
+        User user = new User();
+        User admin = new User();
+        admin.setChatId(update.getMessage().getChatId());
+        user.setChatId(1L);
+        call.setAdminChatId(admin);
+        call.setUserChatId(user);
+        call.setUpdatedAt(nowSec);
+        doReturn(call)
+                .when(callRepository)
+                .findByAdminChatId(update.getMessage().getChatId());
+        assertEquals(callService.sendMessageChat(update.getMessage().getChatId()),1L);
+        ArgumentCaptor<Call> captor = ArgumentCaptor.forClass(Call.class);
+        verify(callRepository).save(captor.capture());
+        assertEquals(captor.getValue(), call);
+    }
+    @Test
+    void sendMessageChatUser() {
+        long nowSec = (new Date().getTime())/1000;
+        doReturn(false)
+                .when(adminService)
+                .checkAdmin(update.getMessage().getChatId());
+        Call call = new Call();
+        User user = new User();
+        User admin = new User();
+        admin.setChatId(1L);
+        user.setChatId(update.getMessage().getChatId());
+        call.setAdminChatId(admin);
+        call.setUserChatId(user);
+        call.setUpdatedAt(nowSec);
+        doReturn(call)
+                .when(callRepository)
+                .findByUserChatId(update.getMessage().getChatId());
+        assertEquals(callService.sendMessageChat(update.getMessage().getChatId()),1L);
+        ArgumentCaptor<Call> captor = ArgumentCaptor.forClass(Call.class);
+        verify(callRepository).save(captor.capture());
+        assertEquals(captor.getValue(), call);
     }
     public void setUpdate(){
         update.setUpdateId(193484977);
