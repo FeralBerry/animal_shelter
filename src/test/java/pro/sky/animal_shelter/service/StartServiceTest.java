@@ -2,29 +2,33 @@ package pro.sky.animal_shelter.service;
 
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.test.context.ActiveProfiles;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import pro.sky.animal_shelter.model.Repositories.UserRepository;
+import pro.sky.animal_shelter.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-@ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@SpringBootTest
+@AutoConfigureMockMvc
 public class StartServiceTest  {
-    @Mock
+    @MockBean
     UserRepository userRepository;
     Update update = new Update();
-    StartService startService = new StartService(userRepository);
+    @Autowired
+    StartService startService;
     @Test
     void start(){
         String actual = """
@@ -36,14 +40,39 @@ public class StartServiceTest  {
         assertEquals(startService.start(), actual);
     }
     @Test
-    void registerTest() {
+    void registerTestPositive() {
         setUpdate();
-        StartService startService = Mockito.mock(StartService.class);
-        doNothing()
-                .when(startService)
-                .register(update.getMessage());
+        long chatId = update.getMessage().getChatId();
+        Message message = update.getMessage();
+        User user = new User();
+        when(userRepository.findById(chatId)).thenReturn(Optional.empty());
+        user.setChatId(message.getChatId());
+        user.setFirstName(message.getChat().getFirstName());
+        user.setLastName(message.getChat().getLastName());
+        user.setUserName(message.getChat().getUserName());
+        user.setUserName(message.getChat().getUserName());
+        startService.register(message);
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
+        assertEquals(captor.getValue(), user);
     }
-
+    @Test
+    void registerTestNegative() {
+        setUpdate();
+        long chatId = update.getMessage().getChatId();
+        Message message = update.getMessage();
+        User user = new User();
+        user.setChatId(message.getChatId());
+        user.setFirstName(message.getChat().getFirstName());
+        user.setLastName(message.getChat().getLastName());
+        user.setUserName(message.getChat().getUserName());
+        user.setUserName(message.getChat().getUserName());
+        when(userRepository.findById(chatId)).thenReturn(Optional.of(user));
+        startService.register(message);
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
+        assertEquals(captor.getValue(), user);
+    }
     public void setUpdate(){
             update.setUpdateId(193484977);
             Message message = new Message();

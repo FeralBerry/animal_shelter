@@ -44,24 +44,29 @@ public class CallService {
             return null;
         } else {
             userStatusService.changeUserStatus(chatId, CALL_A_VOLUNTEER.getStatus());
-            User random = userRepository.findAllAdmin().get(randomizer.nextInt(userRepository.findAllAdmin().size()));
+            var adminsList = userRepository.findAllAdmin();
+            User randomAdmin = adminsList.get(randomizer.nextInt(adminsList.size()));
+            User admin = new User();
+            admin.setChatId(randomAdmin.getChatId());
+            admin.setFirstName(randomAdmin.getFirstName());
+            admin.setLastName(randomAdmin.getLastName());
+            admin.setUserName(randomAdmin.getUserName());
+            admin.setRole(randomAdmin.getRole());
+            admin.setLocationUserOnApp("call");
+            userRepository.save(admin);
+            log.info("admin change status: " + admin);
             User user = new User();
-            user.setChatId(random.getChatId());
-            user.setFirstName(random.getFirstName());
-            user.setLastName(random.getLastName());
-            user.setUserName(random.getUserName());
-            user.setRole(random.getRole());
-            user.setLocationUserOnApp("call");
-            userRepository.save(user);
-            log.info("admin change status: " + user);
+            if(userRepository.findById(chatId).isPresent()){
+                user = userRepository.findById(chatId).get();
+            }
             Call call = new Call();
             long nowSec = (new Date().getTime())/1000;
-            call.setAdminChatId(random);
+            call.setAdminChatId(admin);
             call.setUserChatId(user);
             call.setUpdatedAt(nowSec);
             callRepository.save(call);
             log.info("created new call: " + call);
-            return random.getChatId();
+            return admin.getChatId();
         }
     }
 
@@ -76,13 +81,13 @@ public class CallService {
         Call call;
         long sendChatId;
         if(adminService.checkAdmin(chatId)){
-            call = callRepository.findByUserChatId(chatId);
-            call.setUpdatedAt(nowSec);
-            sendChatId = callRepository.findByUserChatId(chatId).getUserChatId().getChatId();
-        } else {
             call = callRepository.findByAdminChatId(chatId);
             call.setUpdatedAt(nowSec);
-            sendChatId = callRepository.findByAdminChatId(chatId).getAdminChatId().getChatId();
+            sendChatId = call.getUserChatId().getChatId();
+        } else {
+            call = callRepository.findByUserChatId(chatId);
+            call.setUpdatedAt(nowSec);
+            sendChatId = call.getAdminChatId().getChatId();
         }
         callRepository.save(call);
         return sendChatId;

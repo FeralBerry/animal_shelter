@@ -34,4 +34,13 @@ public class PetsImg {
     public void setFileId(String fileId) {
         this.fileId = fileId;
     }
+
+    @Override
+    public String toString() {
+        return "PetsImg{" +
+                "id=" + id +
+                ", pet=" + pet +
+                ", fileId='" + fileId + '\'' +
+                '}';
+    }
 }
