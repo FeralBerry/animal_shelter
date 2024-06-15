@@ -3,9 +3,10 @@ package pro.sky.animal_shelter.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
@@ -25,20 +26,20 @@ import static pro.sky.animal_shelter.enums.UserSatausEnum.NO_STATUS;
 @SpringBootTest
 @AutoConfigureMockMvc
 class CallServiceTest {
-    @Mock
+    @MockBean
     UserStatusService userStatusService;
-    @Mock
+    @MockBean
     UserRepository userRepository;
-    @Mock
+    @MockBean
     CallRepository callRepository;
-    @Mock
+    @MockBean
     AdminService adminService;
+    @Autowired
     CallService callService;
     Update update = new Update();
     @BeforeEach
     void setUp(){
         setUpdate();
-        callService = new CallService(this.userStatusService,this.userRepository,this.adminService,this.callRepository);
     }
     @Test
     void createCallPositive() {
