@@ -59,10 +59,10 @@ class PetServiceTest {
     }
     @Test
     void getPetsNegative(){
-        doReturn(Optional.empty())
+        doReturn(List.of())
                 .when(petRepository)
                 .findAll();
-        assertNull(petService.getPets());
+        assertEquals(petService.getPets(),List.of());
     }
     @ParameterizedTest
     @MethodSource("pets")
