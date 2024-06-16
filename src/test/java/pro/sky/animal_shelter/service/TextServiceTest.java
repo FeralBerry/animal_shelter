@@ -2,29 +2,91 @@ package pro.sky.animal_shelter.service;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import pro.sky.animal_shelter.controller.CallController;
+import pro.sky.animal_shelter.model.Repositories.InfoRepository;
+import pro.sky.animal_shelter.model.Repositories.UserRepository;
+import pro.sky.animal_shelter.model.User;
+import pro.sky.animal_shelter.utils.MessageUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doReturn;
-
+import static org.mockito.Mockito.*;
+import static pro.sky.animal_shelter.enums.UserSatausEnum.NO_STATUS;
+@SpringBootTest
+@AutoConfigureMockMvc
 class TextServiceTest {
+    @MockBean
+    UserRepository userRepository;
+    @MockBean
+    InfoRepository infoRepository;
+    UserStatusService userStatusService = Mockito.mock(UserStatusService.class);
+    MessageUtils messageUtils = Mockito.mock(MessageUtils.class);
+    AdminService adminService = Mockito.mock(AdminService.class);
+    @Autowired
+    ContactInformationService contactInformationService;
+    @Autowired
+    CallController callController;
+    @Autowired
+    UrlService urlService;
+    @Autowired
+    PetService petService;
+    @Autowired
+    AboutService aboutService;
+    @Autowired
+    InfoService infoService;
+    @Autowired
+    ReportService reportService;
+    TextService textService = new TextService(this.messageUtils,this.adminService,this.userStatusService,this.contactInformationService,this.callController,this.urlService,this.petService,this.aboutService,this.infoService,this.reportService);
     Update update = new Update();
-    TextService textService = Mockito.mock(TextService.class);
 
     @Test
     void defineMethod() {
         setUpdate();
         List<SendMessage> sendMessageList = new ArrayList<>();
-        doReturn(sendMessageList)
-                .when(textService)
-                .defineMethod(update);
+        String newStatus = NO_STATUS.getStatus();
+
+        User user = new User();
+
+        Message message = update.getMessage();
+        user.setChatId(message.getChatId());
+        user.setFirstName(message.getChat().getFirstName());
+        user.setLastName(message.getChat().getLastName());
+        user.setUserName(message.getChat().getUserName());
+        user.setLocationUserOnApp(newStatus);
+        doNothing()
+                .when(adminService)
+                .setRole(update.getMessage());
+        SendMessage sendMessage = new SendMessage();
+
+        doReturn(sendMessage)
+                .when(messageUtils)
+                .generateSendMessage(update,"Поздравляем вы стали админом");
+        doReturn(Optional.of(user))
+                .when(userRepository)
+                .findById(update.getMessage().getChatId());
+        doReturn(newStatus)
+                .when(userStatusService)
+                .getUserStatus(update.getMessage().getChatId());
+        doReturn(true)
+                .when(adminService)
+                .checkAdmin(update.getMessage().getChatId());
+        doReturn(sendMessage)
+                .when(messageUtils)
+                .generateSendButton(update.getMessage().getChatId(),"Главное меню администратора.");
+        sendMessageList.add(sendMessage);
+
         assertEquals(sendMessageList,textService.defineMethod(update));
     }
     public void setUpdate(){
