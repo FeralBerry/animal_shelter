@@ -1,8 +1,11 @@
 package pro.sky.animal_shelter.service;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
@@ -16,51 +19,49 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
+@SpringBootTest
+@AutoConfigureMockMvc
 class UserStatusServiceTest {
     Update update = new Update();
-    @Mock
+    @MockBean
     UserRepository userRepository;
-
+    @Autowired
+    UserStatusService userStatusService;
 
     @Test
     void changeUserStatus() {
         setUpdate();
-        UserRepository userRepository = Mockito.mock(UserRepository.class);
         String newStatus = "newstatus";
         User user = new User();
         doReturn(Optional.of(user))
                 .when(userRepository)
                 .findById(update.getMessage().getChatId());
         user.setLocationUserOnApp(newStatus);
-        doReturn(user)
-                .when(userRepository)
-                .save(user);
-        assertEquals(user,userRepository.save(user));
-        UserStatusService userStatusService = mock(UserStatusService.class);
-        doNothing()
-                .when(userStatusService)
-                .changeUserStatus(update,newStatus);
+        user.setChatId(update.getMessage().getChatId());
+
+        userStatusService.changeUserStatus(update,newStatus);
+
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
+        assertEquals(captor.getValue(), user);
     }
 
     @Test
     void testChangeUserStatus() {
         setUpdate();
-        UserRepository userRepository = Mockito.mock(UserRepository.class);
         String newStatus = "newstatus";
         User user = new User();
         doReturn(Optional.of(user))
                 .when(userRepository)
                 .findById(update.getMessage().getChatId());
         user.setLocationUserOnApp(newStatus);
-        doReturn(user)
-                .when(userRepository)
-                .save(user);
-        assertEquals(user,userRepository.save(user));
-        UserStatusService userStatusService = mock(UserStatusService.class);
-        doNothing()
-                .when(userStatusService)
-                .changeUserStatus(update.getMessage().getChatId(),newStatus);
+        user.setChatId(update.getMessage().getChatId());
+
+        userStatusService.changeUserStatus(update.getMessage().getChatId(),newStatus);
+
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
+        assertEquals(captor.getValue(), user);
     }
 
     @Test
@@ -68,12 +69,10 @@ class UserStatusServiceTest {
         setUpdate();
         User user = new User();
         user.setLocationUserOnApp("this");
-        UserRepository userRepository = Mockito.mock(UserRepository.class);
         doReturn(Optional.of(user))
                 .when(userRepository)
                 .findById(update.getMessage().getChatId());
         assertEquals(Optional.of(user),userRepository.findById(update.getMessage().getChatId()));
-        UserStatusService userStatusService = new UserStatusService(userRepository);
         assertEquals(user.getLocationUserOnApp(),userStatusService.getUserStatus(update.getMessage().getChatId()));
     }
     public void setUpdate(){

@@ -64,18 +64,19 @@ public class MessageUtils {
             message.setText(text);
         }
         InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
+        String userStatus = userStatusService.getUserStatus(chatId);
         if (adminService.checkAdmin(chatId)){
-            if(userStatusService.getUserStatus(chatId).equals(NO_STATUS.getStatus())){
+            if(userStatus.equals(NO_STATUS.getStatus())){
                 markupInLine.setKeyboard(createButtonService.createButtonToMainMenuAdmin());
-            } else if(userStatusService.getUserStatus(chatId).equals(CALL.getStatus())){
+            } else if(userStatus.equals(CALL.getStatus())){
                 markupInLine.setKeyboard(createButtonService.callToUser(text));
-            } else if (userStatusService.getUserStatus(chatId).equals(VIEW_PET_LIST.getStatus())){
+            } else if (userStatus.equals(VIEW_PET_LIST.getStatus())){
                 markupInLine.setKeyboard(createButtonService.createButtonToViewPetList());
             }
         } else {
-            if(userStatusService.getUserStatus(chatId).equals(NO_STATUS.getStatus())){
+            if(userStatus.equals(NO_STATUS.getStatus())){
                 markupInLine.setKeyboard(createButtonService.createButtonToUser());
-            } else if (userStatusService.getUserStatus(chatId).equals(VIEW_PET_LIST.getStatus())){
+            } else if (userStatus.equals(VIEW_PET_LIST.getStatus())){
                 markupInLine.setKeyboard(createButtonService.createButtonToViewPetList());
             }
         }
