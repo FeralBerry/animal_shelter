@@ -20,7 +20,7 @@ public class User {
     private String lastName;
     @Column(length = 100)
     private String userName;
-    @Column(length = 10)
+    @Column(length = 255)
     private String role;
     @Column(length = 50)
     private String locationUserOnApp;
