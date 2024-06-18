@@ -5,8 +5,6 @@ import org.springframework.stereotype.Service;
 import pro.sky.animal_shelter.model.Info;
 import pro.sky.animal_shelter.model.Repositories.InfoRepository;
 
-import java.util.List;
-
 @Slf4j
 @Service
 public class InfoService {
@@ -53,39 +51,27 @@ public class InfoService {
         return message.toString();
     }
     public void addRules(String text){
-        List<Info> infos = infoRepository.findAll();
         Info info = new Info();
-        if(infos.size() == 0){
-            info.setRules(text);
-        } else {
-            for (int i = 0; i < infos.size(); i++){
-                info.setRules(text);
-            }
+        if(!infoRepository.findAll().isEmpty()){
+            info = infoRepository.findInfo();
         }
+        info.setRules(text);
         infoRepository.save(info);
     }
     public void addDocuments(String text){
-        List<Info> infos = infoRepository.findAll();
         Info info = new Info();
-        if(infos.size() == 0){
-            info.setDocuments(text);
-        } else {
-            for (int i = 0; i < infos.size(); i++){
-                info.setDocuments(text);
-            }
+        if(!infoRepository.findAll().isEmpty()){
+            info = infoRepository.findInfo();
         }
+        info.setDocuments(text);
         infoRepository.save(info);
     }
     public void addTransportation(String text){
-        List<Info> infos = infoRepository.findAll();
         Info info = new Info();
-        if(infos.size() == 0){
-            info.setTransportation(text);
-        } else {
-            for (int i = 0; i < infos.size(); i++){
-                info.setTransportation(text);
-            }
+        if(!infoRepository.findAll().isEmpty()){
+            info = infoRepository.findInfo();
         }
+        info.setTransportation(text);
         infoRepository.save(info);
     }
 }

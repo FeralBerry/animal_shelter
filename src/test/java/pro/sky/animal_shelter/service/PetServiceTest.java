@@ -4,8 +4,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.telegram.telegrambots.meta.api.objects.*;
 import pro.sky.animal_shelter.model.Pet;
 import pro.sky.animal_shelter.model.PetsImg;
@@ -15,21 +18,25 @@ import pro.sky.animal_shelter.model.Repositories.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@SpringBootTest
+@AutoConfigureMockMvc
 class PetServiceTest {
     Update update = new Update();
-    @Mock
+    @MockBean
     PetRepository petRepository;
-    @Mock
-    PetsImgRepository petImgRepository;
-    @Mock
+    @MockBean
+    PetsImgRepository petsImgRepository;
+    @MockBean
     UserRepository userRepository;
-    PetService petService = new PetService(petRepository,petImgRepository,userRepository);
-    PetService petServiceMock = Mockito.mock(PetService.class);
+    @Autowired
+    PetService petService;
 
     @Test
     void getPetForm() {
@@ -46,95 +53,315 @@ class PetServiceTest {
 
     @ParameterizedTest
     @MethodSource("pets")
-    void getPets(List<Pet> pets) {
+    void getPetsPositive(List<Pet> pets) {
+        when(petRepository.findAll()).thenReturn(pets);
+        assertEquals(petService.getPets(),pets);
+    }
+    @Test
+    void getPetsNegative(){
+        doReturn(List.of())
+                .when(petRepository)
+                .findAll();
+        assertEquals(petService.getPets(),List.of());
+    }
+    @ParameterizedTest
+    @MethodSource("pets")
+    void getPet(List<Pet> pets) {
+        checkPetIsEmpty();
+        checkPetLastViewPositive(pets);
+    }
+    @Test
+    void checkPetIsEmpty(){
+        setUpdate();
+        doReturn(List.of())
+                .when(petRepository)
+                .findAll();
+        pro.sky.animal_shelter.model.User user = new pro.sky.animal_shelter.model.User();
+        assertNull(petService.checkPet(update.getMessage().getChatId(),user));
+    }
+    @ParameterizedTest
+    @MethodSource("pets")
+    void checkPetLastViewPositive(List<Pet> pets){
+        setUpdate();
         doReturn(pets)
-                .when(petServiceMock)
-                .getPets();
-        assertEquals(pets,petServiceMock.getPets());
+                .when(petRepository)
+                .findAll();
+        Pet pet = new Pet();
+        doReturn(Optional.of(pet))
+                .when(petRepository)
+                .findById(1L);
+        pro.sky.animal_shelter.model.User user = new pro.sky.animal_shelter.model.User();
+        user.setPetId(pet);
+
+        assertEquals(petService.checkPet(1L,user),pet);
+
+        ArgumentCaptor<pro.sky.animal_shelter.model.User> captor = ArgumentCaptor.forClass(pro.sky.animal_shelter.model.User.class);
+        verify(userRepository).save(captor.capture());
+        assertEquals(captor.getValue(), user);
+    }
+    @ParameterizedTest
+    @MethodSource("pets")
+    void checkPetLastViewNegative(List<Pet> pets){
+        setUpdate();
+        doReturn(pets)
+                .when(petRepository)
+                .findAll();
+        doReturn(Optional.of(pets.get(1)))
+                .when(petRepository)
+                .findById(1L);
+        pro.sky.animal_shelter.model.User user = new pro.sky.animal_shelter.model.User();
+        Pet pet = new Pet();
+        if(petRepository.findById(1L).isPresent()){
+            pet = petRepository.findById(1L).get();
+        }
+        when(petRepository.findLimitPet()).thenReturn(pet);
+
+        user.setPetId(pet);
+
+        assertEquals(petService.checkPet(1L,user),pet);
+
+        ArgumentCaptor<pro.sky.animal_shelter.model.User> captor = ArgumentCaptor.forClass(pro.sky.animal_shelter.model.User.class);
+        verify(userRepository).save(captor.capture());
+        assertEquals(captor.getValue(), user);
+
+        assertEquals(petRepository.findLimitPet(),pet);
+
+        assertEquals(petService.checkPet(0,user),pet);
+
+        assertEquals(petRepository.findLimitPet(),pet);
+    }
+    @Test
+    void addPetName() {
+        setUpdate();
+        long chatId = update.getMessage().getChatId();
+        String message = "text";
+        Pet pet = new Pet();
+        pet.setPetName(message);
+        petService.addPetName(chatId,message);
+
+        ArgumentCaptor<Pet> captor = ArgumentCaptor.forClass(Pet.class);
+        verify(petRepository).save(captor.capture());
+        assertEquals(captor.getValue().toString(),pet.toString());
+
+        pro.sky.animal_shelter.model.User user = new pro.sky.animal_shelter.model.User();
+        doReturn(Optional.of(user))
+                .when(userRepository)
+                .findById(chatId);
+
+        ArgumentCaptor<pro.sky.animal_shelter.model.User> captor2 = ArgumentCaptor.forClass(pro.sky.animal_shelter.model.User.class);
+        verify(userRepository).save(captor2.capture());
+        assertEquals(captor2.getValue(), user);
+    }
+
+    @Test
+    void getPetImages() {
+        setUpdate();
+        Pet pet1 = new Pet();
+        pet1.setId(1L);
+        pet1.setPetName("Вася");
+        pet1.setDescription("Мягкий");
+        List<Pet> pets = List.of(pet1);
+        doReturn(pets)
+                .when(petRepository)
+                .findAll();
+        Pet pet = new Pet();
+        pet.setId(1L);
+        doReturn(Optional.of(pet))
+                .when(petRepository)
+                .findById(1L);
+        pro.sky.animal_shelter.model.User user = new pro.sky.animal_shelter.model.User();
+        user.setPetId(pet);
+
+        assertEquals(petService.checkPet(1L,user),pet);
+
+        ArgumentCaptor<pro.sky.animal_shelter.model.User> captor = ArgumentCaptor.forClass(pro.sky.animal_shelter.model.User.class);
+        verify(userRepository).save(captor.capture());
+        assertEquals(captor.getValue(), user);
+        List<PetsImg> petsImgList = new ArrayList<>();
+        List<String> images = new ArrayList<>();
+        PetsImg petsImg = new PetsImg();
+        petsImg.setId(1L);
+        petsImg.setFileId("1L");
+        petsImgList.add(petsImg);
+        when(petsImgRepository
+                .findPetsImgByPetId(petService
+                        .checkPet(1L,user)
+                        .getId()))
+                .thenReturn(petsImgList);
+        for (PetsImg petImg : petsImgList){
+            images.add(petImg.getFileId());
+        }
+        when(userRepository.findById(any(Long.class))).thenReturn(Optional.of(user));
+        assertEquals(petService.getPetImages(update).toString(),images.toString());
     }
 
     @ParameterizedTest
     @MethodSource("pets")
-    void getPet(List<Pet> pets) {
+    void changeNextPetViewLast(List<Pet> pets) {
         setUpdate();
-        pro.sky.animal_shelter.model.User user = spy(pro.sky.animal_shelter.model.User.class);
-        doReturn(user)
-                .when(petServiceMock)
-                .getUserById(982721415L);
-        doReturn(pets.get(1))
-                .when(petServiceMock)
-                .getPet(update);
-        assertEquals(pets.get(1),petServiceMock.getPet(update));
-    }
+        pro.sky.animal_shelter.model.User user = new pro.sky.animal_shelter.model.User();
+        Pet pet = new Pet();
+        pet.setId(1L);
+        user.setPetId(pet);
+        when(userRepository.findById(update.getMessage().getChatId())).thenReturn(Optional.of(user));
+        System.out.println(user.getPetId());
+        doReturn(pets.get(2))
+                .when(petRepository)
+                .findIdLastPet();
+        doReturn(pets.get(0))
+                .when(petRepository)
+                .findIdFirstPet();
+        user.setPetId(pets.get(0));
 
-    @Test
-    void addPetName() {
-        setUpdate();
-        doNothing()
-                .when(petServiceMock)
-                .addPetName(update.getMessage().getChatId(),"Имя");
-    }
+        petService.changeNextPetView(update.getMessage().getChatId());
 
+        ArgumentCaptor<pro.sky.animal_shelter.model.User> captor = ArgumentCaptor.forClass(pro.sky.animal_shelter.model.User.class);
+        verify(userRepository).save(captor.capture());
+        assertEquals(captor.getValue(), user);
+    }
     @ParameterizedTest
-    @MethodSource("petImages")
-    void getPetImages(List<String> petImages) {
+    @MethodSource("pets")
+    void changeNextPetViewMiddleOrFirst(List<Pet> pets) {
         setUpdate();
-        doReturn(petImages.get(1))
-                .when(petServiceMock)
-                .getPetImages(update);
-        assertEquals(petImages.get(1),petServiceMock.getPetImages(update));
-    }
+        pro.sky.animal_shelter.model.User user = new pro.sky.animal_shelter.model.User();
+        Pet pet = new Pet();
+        pet.setId(1L);
+        user.setPetId(pet);
+        when(userRepository.findById(update.getMessage().getChatId())).thenReturn(Optional.of(user));
 
-    @Test
-    void changeNextPetView() {
+        doReturn(pets.get(0))
+                .when(petRepository)
+                .findIdLastPet();
+        doReturn(pets.get(2))
+                .when(petRepository)
+                .findNextPet(user.getPetId().getId());
+        user.setPetId(pets.get(2));
+
+        petService.changeNextPetView(update.getMessage().getChatId());
+
+        ArgumentCaptor<pro.sky.animal_shelter.model.User> captor = ArgumentCaptor.forClass(pro.sky.animal_shelter.model.User.class);
+        verify(userRepository).save(captor.capture());
+        assertEquals(captor.getValue(), user);
+    }
+    @ParameterizedTest
+    @MethodSource("pets")
+    void changePrevPetViewFirst(List<Pet> pets) {
         setUpdate();
-        doNothing()
-                .when(petServiceMock)
-                .changeNextPetView(update.getMessage().getChatId());
-    }
+        pro.sky.animal_shelter.model.User user = new pro.sky.animal_shelter.model.User();
+        Pet pet = new Pet();
+        pet.setId(1L);
+        user.setPetId(pet);
+        when(userRepository.findById(update.getMessage().getChatId())).thenReturn(Optional.of(user));
 
-    @Test
-    void changePrevPetView() {
+        doReturn(pets.get(0))
+                .when(petRepository)
+                .findIdFirstPet();
+
+        doReturn(pets.get(2))
+                .when(petRepository)
+                .findIdLastPet();
+        user.setPetId(pets.get(2));
+
+        petService.changeNextPetView(update.getMessage().getChatId());
+
+        ArgumentCaptor<pro.sky.animal_shelter.model.User> captor = ArgumentCaptor.forClass(pro.sky.animal_shelter.model.User.class);
+        verify(userRepository).save(captor.capture());
+        assertEquals(captor.getValue(), user);
+    }
+    @ParameterizedTest
+    @MethodSource("pets")
+    void changePrevPetViewMiddleOrLast(List<Pet> pets) {
         setUpdate();
-        doNothing()
-                .when(petServiceMock)
-                .changePrevPetView(update.getMessage().getChatId());
-    }
+        pro.sky.animal_shelter.model.User user = new pro.sky.animal_shelter.model.User();
+        Pet pet = new Pet();
+        pet.setId(1L);
+        user.setPetId(pet);
+        when(userRepository.findById(update.getMessage().getChatId())).thenReturn(Optional.of(user));
 
+        doReturn(pets.get(2))
+                .when(petRepository)
+                .findPrevPet(user.getPetId().getId());
+
+        doReturn(pets.get(0))
+                .when(petRepository)
+                .findIdLastPet();
+        user.setPetId(pets.get(0));
+
+        petService.changeNextPetView(update.getMessage().getChatId());
+
+        ArgumentCaptor<pro.sky.animal_shelter.model.User> captor = ArgumentCaptor.forClass(pro.sky.animal_shelter.model.User.class);
+        verify(userRepository).save(captor.capture());
+        assertEquals(captor.getValue(), user);
+    }
     @ParameterizedTest
     @MethodSource("petImages")
     void addPetImages(List<String> petImages) {
         setUpdate();
-        doNothing()
-                .when(petServiceMock)
-                .addPetImages(update.getMessage().getChatId(),petImages);
+        pro.sky.animal_shelter.model.User user = new pro.sky.animal_shelter.model.User();
+        Pet pet = new Pet();
+        pet.setId(1L);
+        user.setPetId(pet);
+        user.setAddedPetId(pet);
+        when(userRepository.findById(update.getMessage().getChatId())).thenReturn(Optional.of(user));
+        when(petRepository.findById(userRepository.findById(update.getMessage().getChatId()).get().getAddedPetId().getId())).thenReturn(Optional.of(pet));
+        List<PetsImg> petsImgList = new ArrayList<>();
+        PetsImg petsImg = new PetsImg();
+        for (String photo : petImages){
+            petsImg.setPetId(pet);
+            petsImg.setFileId(photo);
+            petsImgList.add(petsImg);
+        }
+        petService.addPetImages(update.getMessage().getChatId(),petImages);
+        ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        verify(petsImgRepository).saveAll(captor.capture());
+        assertEquals(captor.getValue().toString(), petsImgList.toString());
     }
 
     @Test
     void addPetDescription() {
         setUpdate();
-        doNothing()
-                .when(petServiceMock)
-                .addPetDescription(update.getMessage().getChatId(),"Описание");
+        String description = "description";
+        Pet pet = new Pet();
+        pro.sky.animal_shelter.model.User user = new pro.sky.animal_shelter.model.User();
+        pet.setId(1L);
+        user.setPetId(pet);
+        user.setAddedPetId(pet);
+        when(userRepository.findById(update.getMessage().getChatId())).thenReturn(Optional.of(user));
+        pet.setDescription(description);
+        when(petRepository.findById(userRepository.findById(update.getMessage().getChatId()).get().getAddedPetId().getId())).thenReturn(Optional.of(pet));
+
+        petService.addPetDescription(update.getMessage().getChatId(),description);
+
+        ArgumentCaptor<Pet> captor = ArgumentCaptor.forClass(Pet.class);
+        verify(petRepository).save(captor.capture());
+        assertEquals(captor.getValue(), pet);
     }
 
     @Test
-    void getUserById() {
-        setUpdate();
-        pro.sky.animal_shelter.model.User user = spy(pro.sky.animal_shelter.model.User.class);
-        doReturn(user)
-                .when(petServiceMock)
-                .getUserById(982721415L);
-        assertEquals(user,petServiceMock.getUserById(982721415L));
+    void getUserByIdPositive() {
+        pro.sky.animal_shelter.model.User user = new pro.sky.animal_shelter.model.User();
+        when(userRepository.findById(any(Long.class))).thenReturn(Optional.of(user));
+        assertEquals(petService.getUserById(any(Long.class)),user);
     }
-
-    @ParameterizedTest
-    @MethodSource("pets")
-    void getPetById(List<Pet> pets) {
-        doReturn(pets.get(1))
-                .when(petServiceMock)
-                .getPetById(1L);
-        assertEquals(pets.get(1),petServiceMock.getPetById(1L));
+    @Test
+    void getUserByIdNegative() {
+        when(userRepository.findById(any(Long.class))).thenReturn(Optional.empty());
+        assertThrows(NoSuchElementException.class, () -> {
+            petService.getUserById(any(Long.class));
+        });
+    }
+    @Test
+    void getPetByIdPositive() {
+        Pet pet = new Pet();
+        when(petRepository.findById(any(Long.class))).thenReturn(Optional.of(pet));
+        assertEquals(petService.getPetById(any(Long.class)),pet);
+    }
+    @Test
+    void getPetByIdNegative() {
+        when(petRepository.findById(any(Long.class))).thenReturn(Optional.empty());
+        assertThrows(NoSuchElementException.class, () -> {
+            petService.getPetById(any(Long.class));
+        });
     }
     static Stream<Arguments> pets(){
         Pet pet1 = new Pet();
@@ -142,13 +369,13 @@ class PetServiceTest {
         pet1.setPetName("Вася");
         pet1.setDescription("Мягкий");
         Pet pet2 = new Pet();
-        pet1.setId(2L);
-        pet1.setPetName("Бобик");
-        pet1.setDescription("Игривый");
+        pet2.setId(2L);
+        pet2.setPetName("Бобик");
+        pet2.setDescription("Игривый");
         Pet pet3 = new Pet();
-        pet1.setId(3L);
-        pet1.setPetName("Мурзик");
-        pet1.setDescription("Ласковый");
+        pet3.setId(3L);
+        pet3.setPetName("Мурзик");
+        pet3.setDescription("Ласковый");
         return Stream.of(
                 Arguments.of(List.of(
                         pet1,
@@ -157,56 +384,9 @@ class PetServiceTest {
                 )));
     }
     static Stream<Arguments> petImages(){
-        PetsImg pet1 = new PetsImg();
-        Pet pet = new Pet();
-        List<PetsImg> petsImgs1 = new ArrayList<>();
-        {
-            pet.setId(1L);
-            pet1.setId(1L);
-            pet1.setFileId("1");
-            pet1.setPetId(pet);
-            petsImgs1.add(pet1);
-            pet1.setId(2L);
-            pet1.setFileId("2");
-            pet1.setPetId(pet);
-            petsImgs1.add(pet1);
-            pet1.setId(3L);
-            pet1.setFileId("3");
-            pet1.setPetId(pet);
-            petsImgs1.add(pet1);
-        }
-        List<PetsImg> petsImgs2 = new ArrayList<>();
-        {
-            pet.setId(2L);
-            pet1.setId(4L);
-            pet1.setFileId("1");
-            pet1.setPetId(pet);
-            petsImgs2.add(pet1);
-            pet1.setId(5L);
-            pet1.setFileId("2");
-            pet1.setPetId(pet);
-            petsImgs2.add(pet1);
-            pet1.setId(6L);
-            pet1.setFileId("3");
-            pet1.setPetId(pet);
-            petsImgs2.add(pet1);
-        }
-        List<PetsImg> petsImgs3 = new ArrayList<>();
-        {
-            pet.setId(3L);
-            pet1.setId(7L);
-            pet1.setFileId("1");
-            pet1.setPetId(pet);
-            petsImgs3.add(pet1);
-            pet1.setId(8L);
-            pet1.setFileId("2");
-            pet1.setPetId(pet);
-            petsImgs3.add(pet1);
-            pet1.setId(9L);
-            pet1.setFileId("3");
-            pet1.setPetId(pet);
-            petsImgs3.add(pet1);
-        }
+        String petsImgs1 = "1";
+        String petsImgs2 = "2";
+        String petsImgs3 = "3";
         return Stream.of(
                 Arguments.of(List.of(
                         petsImgs1,

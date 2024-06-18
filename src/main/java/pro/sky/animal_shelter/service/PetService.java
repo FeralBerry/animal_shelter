@@ -69,7 +69,7 @@ public class PetService {
      * @param newUser объект пользователя который просматривает животных
      * @return возвращает объект животного
      */
-    private Pet checkPet(long lastViewPetId, User newUser) {
+    public Pet checkPet(long lastViewPetId, User newUser) {
         if(getPets().isEmpty()){
             return null;
         } else {
@@ -165,8 +165,8 @@ public class PetService {
     public void addPetImages(long chatId,List<String> photos){
         Pet petId = getUserById(chatId).getAddedPetId();
         List <PetsImg> list = new ArrayList<>();
+        PetsImg petsImg = new PetsImg();
         for (String photo : photos){
-            PetsImg petsImg = new PetsImg();
             petsImg.setPetId(petId);
             petsImg.setFileId(photo);
             list.add(petsImg);
@@ -182,7 +182,6 @@ public class PetService {
     public void addPetDescription(long chatId,String description){
         Pet petId = getUserById(chatId).getAddedPetId();
         Pet pet = getPetById(petId.getId());
-        System.out.println(pet);
         pet.setDescription(description);
         petRepository.save(pet);
     }

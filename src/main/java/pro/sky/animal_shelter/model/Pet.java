@@ -29,4 +29,13 @@ public class Pet {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    @Override
+    public String toString() {
+        return "Pet{" +
+                "id=" + id +
+                ", petName='" + petName + '\'' +
+                ", description='" + description + '\'' +
+                '}';
+    }
 }
