@@ -1,5 +1,5 @@
 CREATE TABLE reports_img (
-    id bigint not null primary key,
+    id bigserial primary key,
     pet_id bigint,
     FOREIGN KEY (pet_id) REFERENCES pets(id),
     user_chat_id bigint,

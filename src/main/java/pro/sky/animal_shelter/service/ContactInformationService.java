@@ -10,6 +10,7 @@ import pro.sky.animal_shelter.model.User;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,9 +40,10 @@ public class ContactInformationService {
         Pattern pattern = Pattern.compile("^(\\+\\d{1,3}( )?)?((\\(\\d{3}\\))|\\d{3})[- .]?\\d{3}[- .]?\\d{2}[- .]?\\d{2}$");
         Matcher matcher = pattern.matcher(message);
         ContactInformation contactInformation = new ContactInformation();
+        Optional<User> opUser = userRepository.findById(chatId);
         User user;
-        if(userRepository.findById(chatId).isPresent()){
-            user = userRepository.findById(chatId).get();
+        if(opUser.isPresent()){
+            user = opUser.get();
         } else {
             throw new RuntimeException("Пользователя с таким id не существует");
         }

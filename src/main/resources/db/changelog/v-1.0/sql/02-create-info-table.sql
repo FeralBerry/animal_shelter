@@ -1,5 +1,5 @@
 CREATE TABLE info (
-    id bigint not null primary key,
+    id bigserial primary key,
     rules text default null,
     documents text default null,
     transportation text default null,
