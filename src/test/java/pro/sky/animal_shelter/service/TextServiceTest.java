@@ -1,7 +1,8 @@
 package pro.sky.animal_shelter.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,18 +13,23 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import pro.sky.animal_shelter.controller.CallController;
+import pro.sky.animal_shelter.model.Call;
+import pro.sky.animal_shelter.model.Pet;
+import pro.sky.animal_shelter.model.Repositories.CallRepository;
 import pro.sky.animal_shelter.model.Repositories.InfoRepository;
+import pro.sky.animal_shelter.model.Repositories.PetRepository;
 import pro.sky.animal_shelter.model.Repositories.UserRepository;
 import pro.sky.animal_shelter.model.User;
 import pro.sky.animal_shelter.utils.MessageUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static pro.sky.animal_shelter.enums.UserSatausEnum.NO_STATUS;
+import static pro.sky.animal_shelter.enums.AdminStatusEnum.*;
+import static pro.sky.animal_shelter.enums.UserSatausEnum.*;
+import static pro.sky.animal_shelter.enums.UserSatausEnum.ADD_PET_REPORT_TEXT;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 class TextServiceTest {
@@ -31,10 +37,19 @@ class TextServiceTest {
     UserRepository userRepository;
     @MockBean
     InfoRepository infoRepository;
-    UserStatusService userStatusService = Mockito.mock(UserStatusService.class);
-    MessageUtils messageUtils = Mockito.mock(MessageUtils.class);
-    AdminService adminService = Mockito.mock(AdminService.class);
+    @MockBean
+    CallRepository callRepository;
+    @MockBean
+    PetRepository petRepository;
+    @MockBean
+    UserStatusService userStatusService;
     @Autowired
+    MessageUtils messageUtils;
+    @Autowired
+    CallService callService;
+    @MockBean
+    AdminService adminService;
+    @MockBean
     ContactInformationService contactInformationService;
     @Autowired
     CallController callController;
@@ -42,52 +57,323 @@ class TextServiceTest {
     UrlService urlService;
     @Autowired
     PetService petService;
-    @Autowired
+    @MockBean
     AboutService aboutService;
-    @Autowired
+    @MockBean
     InfoService infoService;
-    @Autowired
+    @MockBean
     ReportService reportService;
-    TextService textService = new TextService(this.messageUtils,this.adminService,this.userStatusService,this.contactInformationService,this.callController,this.urlService,this.petService,this.aboutService,this.infoService,this.reportService);
     Update update = new Update();
-
+    @Autowired
+    TextService textService;
+    @BeforeEach
+    void setUp(){
+        textService = new TextService(this.messageUtils,
+                this.adminService,
+                this.userStatusService,
+                this.contactInformationService,
+                this.callController,
+                this.urlService,
+                this.petService,
+                this.aboutService,
+                this.infoService,
+                this.reportService);
+    }
     @Test
     void defineMethod() {
         setUpdate();
         List<SendMessage> sendMessageList = new ArrayList<>();
-        String newStatus = NO_STATUS.getStatus();
-
+        SendMessage message;
+        long chatId = update.getMessage().getChatId();
         User user = new User();
+        {
+            user.setChatId(chatId);
+            user.setRole("admin");
+            doReturn(Optional.of(user))
+                    .when(userRepository)
+                    .findById(chatId);
+            {
+                doReturn(true)
+                        .when(adminService)
+                        .checkAdmin(chatId);
+                {
+                    {
+                        doReturn(VIEW_CONTACT_INFORMATION.getStatus())
+                                .when(userStatusService)
+                                .getUserStatus(chatId);
+                        message = messageUtils.generateSendButton(update.getMessage().getChatId(),
+                                "Ввели не id или не число.\n" +
+                                        "Для удаления обратной связи введите ее id, для перехода ко всем командам exit или нажмите /start");
+                        {
+                            update.getMessage().setText("text");
+                            sendMessageList.add(message);
+                            assertEquals(sendMessageList,textService.defineMethod(update));
+                            sendMessageList.clear();
+                        }
+                        update.getMessage().setText("1");
+                        message = messageUtils.generateSendMessage(update,contactInformationService.deleteContactInformationById(Long.parseLong(update.getMessage().getText())) + "\n" +
+                                "Ввели не id или не число.\nДля удаления обратной связи введите ее id, для перехода ко всем командам exit или нажмите /start");
+                        {
+                            sendMessageList.add(message);
+                            assertEquals(sendMessageList,textService.defineMethod(update));
+                            sendMessageList.clear();
+                        }
+                        update.getMessage().setText("exit");
+                        message = messageUtils.generateSendButton(update.getMessage().getChatId(),
+                                "Главное меню администратора.");
+                        {
+                            sendMessageList.add(message);
+                            assertEquals(sendMessageList,textService.defineMethod(update));
+                            sendMessageList.clear();
+                        }
+                    }
+                    {
+                        doReturn(CALL.getStatus())
+                                .when(userStatusService)
+                                .getUserStatus(chatId);
+                        Call call = new Call();
 
-        Message message = update.getMessage();
-        user.setChatId(message.getChatId());
-        user.setFirstName(message.getChat().getFirstName());
-        user.setLastName(message.getChat().getLastName());
-        user.setUserName(message.getChat().getUserName());
-        user.setLocationUserOnApp(newStatus);
-        doNothing()
-                .when(adminService)
-                .setRole(update.getMessage());
-        SendMessage sendMessage = new SendMessage();
+                        call.setAdminChatId(user);
+                        User user1 = new User();
+                        user1.setChatId(2L);
+                        call.setUserChatId(user1);
 
-        doReturn(sendMessage)
-                .when(messageUtils)
-                .generateSendMessage(update,"Поздравляем вы стали админом");
-        doReturn(Optional.of(user))
-                .when(userRepository)
-                .findById(update.getMessage().getChatId());
-        doReturn(newStatus)
-                .when(userStatusService)
-                .getUserStatus(update.getMessage().getChatId());
-        doReturn(true)
-                .when(adminService)
-                .checkAdmin(update.getMessage().getChatId());
-        doReturn(sendMessage)
-                .when(messageUtils)
-                .generateSendButton(update.getMessage().getChatId(),"Главное меню администратора.");
-        sendMessageList.add(sendMessage);
+                        doReturn(call)
+                                .when(callRepository)
+                                .findByAdminChatId(chatId);
 
-        assertEquals(sendMessageList,textService.defineMethod(update));
+                        message.setChatId(callController.sendMessageToChat(update.getMessage().getChatId()));
+
+                        ArgumentCaptor<Call> callCaptor = ArgumentCaptor.forClass(Call.class);
+                        verify(callRepository).save(callCaptor.capture());
+                        assertEquals(callCaptor.getValue(), call);
+
+                        message.setText(update.getMessage().getText());
+
+                        doReturn(CALL_A_VOLUNTEER.getStatus())
+                                .when(userStatusService)
+                                .getUserStatus(2L);
+                        {
+                            {
+                                doReturn(List.of())
+                                        .when(userRepository)
+                                        .findAllAdmin();
+                                assertEquals(0L,callService.createCall(update));
+                                message.setReplyMarkup(null);
+                                sendMessageList.add(message);
+                                assertEquals(sendMessageList,textService.defineMethod(update));
+                                sendMessageList.clear();
+                            }
+                            {
+                                sendMessageList.add(message);
+                                doReturn(List.of(user1))
+                                        .when(userRepository)
+                                        .findAllAdmin();
+                                message = messageUtils.generateSendButton(urlService.callVolunteer(update), "Закончить разговор");
+                                sendMessageList.add(message);
+
+                                assertEquals(sendMessageList,textService.defineMethod(update));
+                                sendMessageList.clear();
+                            }
+                        }
+                    }
+                    {
+                        message = new SendMessage();
+                        doReturn(PET_ADD.getStatus())
+                                .when(userStatusService)
+                                .getUserStatus(chatId);
+
+                        Pet pet = new Pet();
+                        pet.setPetName(update.getMessage().getText());
+
+                        user.setAddedPetId(pet);
+                        user.setLocationUserOnApp(PET_ADD_NAME.getStatus());
+
+                        doReturn(Optional.of(user))
+                                .when(userRepository)
+                                .findById(chatId);
+
+                        petService.addPetName(update.getMessage().getChatId(),update.getMessage().getText());
+
+                        ArgumentCaptor<Pet> petCaptor = ArgumentCaptor.forClass(Pet.class);
+                        verify(petRepository).save(petCaptor.capture());
+                        assertEquals(petCaptor.getValue().toString(), pet.toString());
+                        message.setChatId(update.getMessage().getChatId());
+                        message.setText("Загрузите изображение и потом добавьте описание животного");
+
+                        sendMessageList.add(message);
+                        assertEquals(sendMessageList,textService.defineMethod(update));
+                        sendMessageList.clear();
+                    }
+                    {
+                        message = new SendMessage();
+                        doReturn(PET_ADD_IMG.getStatus())
+                                .when(userStatusService)
+                                .getUserStatus(chatId);
+                        Pet pet = new Pet();
+                        pet.setId(1L);
+                        {
+                            {
+                                when(userRepository.findById(any(Long.class))).thenReturn(Optional.of(user));
+                                assertEquals(petService.getUserById(any(Long.class)),user);
+                                {
+                                    when(petRepository.findById(any(Long.class))).thenReturn(Optional.of(pet));
+                                    assertEquals(petService.getPetById(any(Long.class)),pet);
+                                    pet.setDescription(update.getMessage().getText());
+                                    message.setChatId(chatId);
+                                    message.setText("Успешно сохранен новый питомец");
+                                    sendMessageList.add(message);
+                                    sendMessageList.add(messageUtils.generateSendButton(chatId, "Главное меню администратора."));
+                                    assertEquals(sendMessageList,textService.defineMethod(update));
+                                    sendMessageList.clear();
+                                }
+                                {
+                                    when(petRepository.findById(any(Long.class))).thenReturn(Optional.empty());
+                                    assertThrows(NoSuchElementException.class, () ->
+                                        petService.getPetById(any(Long.class)));
+                                }
+
+                            }
+                            {
+                                when(userRepository.findById(chatId)).thenReturn(Optional.empty());
+                                assertThrows(NoSuchElementException.class, () ->
+                                    petService.getUserById(chatId));
+                            }
+                        }
+                    }
+                    {
+                        message = new SendMessage();
+                        doReturn(ADD_ABOUT_SHELTER_NAME.getStatus())
+                                .when(userStatusService)
+                                .getUserStatus(chatId);
+
+                        // sendMessageList.add(adminAddShelterName(update));
+                        // assertEquals(sendMessageList,textService.defineMethod(update));
+                        // sendMessageList.clear();
+                    }
+                    {
+                        message = new SendMessage();
+                        doReturn(ADD_ABOUT_SCHEDULE.getStatus())
+                                .when(userStatusService)
+                                .getUserStatus(chatId);
+
+                        // sendMessageList.add(adminAddSchedule(update));
+                        // assertEquals(sendMessageList,textService.defineMethod(update));
+                        // sendMessageList.clear();
+                    }
+                    {
+                        message = new SendMessage();
+                        doReturn(ADD_ABOUT_SECURITY_CONTACTS.getStatus())
+                                .when(userStatusService)
+                                .getUserStatus(chatId);
+
+                        // sendMessageList.add(adminAddSecurityContacts(update));
+                        // assertEquals(sendMessageList,textService.defineMethod(update));
+                        // sendMessageList.clear();
+                    }
+                    {
+                        message = new SendMessage();
+                        doReturn(ADD_INFO_RULES.getStatus())
+                                .when(userStatusService)
+                                .getUserStatus(chatId);
+
+                        // sendMessageList.add(adminAddRules(update));
+                        // assertEquals(sendMessageList,textService.defineMethod(update));
+                        // sendMessageList.clear();
+                    }
+                    {
+                        message = new SendMessage();
+                        doReturn(ADD_INFO_DOCUMENTS.getStatus())
+                                .when(userStatusService)
+                                .getUserStatus(chatId);
+
+                        // sendMessageList.add(adminAddDocuments(update));
+                        // assertEquals(sendMessageList,textService.defineMethod(update));
+                        // sendMessageList.clear();
+                    }
+                    {
+                        message = new SendMessage();
+                        doReturn(ADD_INFO_TRANSPORTATION.getStatus())
+                                .when(userStatusService)
+                                .getUserStatus(chatId);
+
+                        // sendMessageList.add(adminAddTransportation(update));
+                        // assertEquals(sendMessageList,textService.defineMethod(update));
+                        // sendMessageList.clear();
+                    }
+                    {
+                        message = new SendMessage();
+                        doReturn(NO_STATUS.getStatus())
+                                .when(userStatusService)
+                                .getUserStatus(chatId);
+                        sendMessageList.add(messageUtils.generateSendButton(chatId, "Главное меню администратора."));
+                        assertEquals(sendMessageList,textService.defineMethod(update));
+                        sendMessageList.clear();
+                    }
+                }
+            }
+            {
+                doReturn(false)
+                        .when(adminService)
+                        .checkAdmin(chatId);
+                {
+                    {
+                        doReturn(NO_STATUS.getStatus())
+                                .when(userStatusService)
+                                .getUserStatus(chatId);
+
+                        // sendMessageList.add(userNoStatus(update));
+                        // assertEquals(sendMessageList,textService.defineMethod(update));
+                        // sendMessageList.clear();
+                    }
+                    {
+                        doReturn(GET_PET_FORM.getStatus())
+                                .when(userStatusService)
+                                .getUserStatus(chatId);
+
+                        // sendMessageList.add(userGetPetFormStatus(update));
+                        // assertEquals(sendMessageList,textService.defineMethod(update));
+                        // sendMessageList.clear();
+                    }
+                    {
+                        doReturn(GET_CONTACT_INFORMATION.getStatus())
+                                .when(userStatusService)
+                                .getUserStatus(chatId);
+
+                        // sendMessageList.add(userGetContactInformationStatus(update));
+                        // assertEquals(sendMessageList,textService.defineMethod(update));
+                        // sendMessageList.clear();
+                    }
+                    {
+                        doReturn(ADD_PHONE.getStatus())
+                                .when(userStatusService)
+                                .getUserStatus(chatId);
+
+                        // sendMessageList.add(userAddPhoneStatus(update));
+                        // assertEquals(sendMessageList,textService.defineMethod(update));
+                        // sendMessageList.clear();
+                    }
+                    {
+                        doReturn(ADD_PET_REPORT_TEXT.getStatus())
+                                .when(userStatusService)
+                                .getUserStatus(chatId);
+
+                        // sendMessageList.add(userAddPetReportTextStatus(update));
+                        // assertEquals(sendMessageList,textService.defineMethod(update));
+                        // sendMessageList.clear();
+                    }
+                    {
+                        doReturn(CALL_A_VOLUNTEER.getStatus())
+                                .when(userStatusService)
+                                .getUserStatus(chatId);
+
+                        // sendMessageList.add(userCallToVolunteerStatus(update));
+                        // assertEquals(sendMessageList,textService.defineMethod(update));
+                        // sendMessageList.clear();
+                    }
+                }
+            }
+        }
     }
     public void setUpdate(){
         update.setUpdateId(193484977);

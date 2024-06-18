@@ -11,6 +11,7 @@ import pro.sky.animal_shelter.model.Repositories.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static pro.sky.animal_shelter.enums.AdminStatusEnum.PET_ADD_NAME;
 
@@ -191,8 +192,9 @@ public class PetService {
      * @return возвращает пользователя по id или ошибку если такого пользователя нет
      */
     public User getUserById(long chatId){
-        if(userRepository.findById(chatId).isPresent()){
-            return userRepository.findById(chatId).get();
+        Optional<User> user = userRepository.findById(chatId);
+        if(user.isPresent()){
+            return user.get();
         } else {
             throw new NoSuchElementException("Пользователь с id=" + chatId + " не существует");
         }
@@ -203,8 +205,9 @@ public class PetService {
      * @return возвращает животного по id или ошибку если такого животного нет
      */
     public Pet getPetById(long id){
-        if(petRepository.findById(id).isPresent()) {
-            return petRepository.findById(id).get();
+        Optional<Pet> pet = petRepository.findById(id);
+        if(pet.isPresent()) {
+            return pet.get();
         } else {
             throw new NoSuchElementException("Животное с id=" + id + " не существует");
         }
