@@ -10,6 +10,7 @@ import pro.sky.animal_shelter.model.User;
 import pro.sky.animal_shelter.model.Repositories.UserRepository;
 
 import java.util.Date;
+import java.util.Optional;
 import java.util.Random;
 
 import static pro.sky.animal_shelter.enums.UserSatausEnum.CALL_A_VOLUNTEER;
@@ -39,12 +40,12 @@ public class CallService {
     public Long createCall(Update update){
         Random randomizer = new Random();
         long chatId = update.getMessage().getChatId();
-        if(userRepository.findAllAdmin().isEmpty()){
+        var adminsList = userRepository.findAllAdmin();
+        if(adminsList.isEmpty()){
             userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
-            return null;
+            return 0L;
         } else {
             userStatusService.changeUserStatus(chatId, CALL_A_VOLUNTEER.getStatus());
-            var adminsList = userRepository.findAllAdmin();
             User randomAdmin = adminsList.get(randomizer.nextInt(adminsList.size()));
             User admin = new User();
             admin.setChatId(randomAdmin.getChatId());
@@ -56,8 +57,9 @@ public class CallService {
             userRepository.save(admin);
             log.info("admin change status: " + admin);
             User user = new User();
-            if(userRepository.findById(chatId).isPresent()){
-                user = userRepository.findById(chatId).get();
+            Optional<User> hasUser = userRepository.findById(chatId);
+            if(hasUser.isPresent()){
+                user = hasUser.get();
             }
             Call call = new Call();
             long nowSec = (new Date().getTime())/1000;
