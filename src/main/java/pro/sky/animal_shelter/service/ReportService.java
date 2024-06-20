@@ -205,8 +205,9 @@ public class ReportService {
      * @return возвращает отчет по id или ошибку если такого отчета нет
      */
     public Report getReportById(long id){
-        if(reportRepository.findById(id).isPresent()){
-            return reportRepository.findById(id).get();
+        Optional<Report> report = reportRepository.findById(id);
+        if(report.isPresent()){
+            return report.get();
         } else {
             throw new NoSuchElementException("Отечет с id=" + id + " не существует");
         }

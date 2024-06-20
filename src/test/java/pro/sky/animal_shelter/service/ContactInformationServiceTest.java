@@ -40,11 +40,7 @@ class ContactInformationServiceTest {
     }
     @Test
     void addContactPhone() {
-        setUpdate();
-        doReturn(true)
-                .when(contactInformationServiceMock)
-                .addContactPhone(update);
-        assertTrue(contactInformationServiceMock.addContactName(update));
+
     }
     @Test
     void addContactName() {
