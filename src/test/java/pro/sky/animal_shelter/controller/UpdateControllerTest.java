@@ -1,16 +1,10 @@
 package pro.sky.animal_shelter.controller;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.*;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import pro.sky.animal_shelter.utils.MessageUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -18,10 +12,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -36,7 +27,7 @@ class UpdateControllerTest {
     @Test
     void registerBot() {
         setUpdate();
-        String consoleOutput = null;
+        String consoleOutput;
         boolean output = false;
         PrintStream originalOut = System.out;
         try{
@@ -56,7 +47,7 @@ class UpdateControllerTest {
 
     @Test
     void processUpdate() {
-        String consoleOutput = null;
+        String consoleOutput;
         boolean output = false;
         PrintStream originalOut = System.out;
         try{
