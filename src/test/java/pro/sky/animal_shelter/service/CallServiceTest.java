@@ -68,7 +68,7 @@ class CallServiceTest {
                 .when(userStatusService)
                 .changeUserStatus(update.getMessage().getChatId(), NO_STATUS.getStatus());
         when(userRepository.findAllAdmin()).thenReturn(List.of());
-        assertNull(callService.createCall(update));
+        assertEquals(0,callService.createCall(update));
     }
     @Test
     void sendMessageChatAdmin() {
