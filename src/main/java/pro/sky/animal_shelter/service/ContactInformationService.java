@@ -31,7 +31,7 @@ public class ContactInformationService {
         return MESSAGE;
     }
 
-    /**
+    /** Добавляет телефон пользователя в таблицу ContactInformation. Входной параметр - Update
      * @return возвращаем true сообщение отправлено по формату или false, если не по формату
      */
     public boolean addContactPhone(Update update){
@@ -48,7 +48,7 @@ public class ContactInformationService {
             throw new RuntimeException("Пользователя с таким id не существует");
         }
         if(matcher.matches()){
-            contactInformation.setPhone(message);
+            contactInformation .setPhone(message);
             contactInformation.setChatId(user);
             contactInformationRepository.save(contactInformation);
             return true;
@@ -56,7 +56,7 @@ public class ContactInformationService {
         return false;
     }
 
-    /**
+    /**Добавляет имя пользователя в таблицу ContactInformation. На вход принимает Update
      * @return возвращаем true, если сообщение не пустое, или false, если отправлено пустое сообщение
      */
     public boolean addContactName(Update update){
@@ -93,4 +93,5 @@ public class ContactInformationService {
             return "Обратная связь под id не найдена";
         }
     }
+
 }
