@@ -11,11 +11,11 @@ public class About {
     private Long id;
     @Column(name = "shelter_name", length = 100)
     private String shelterName;
-    @Column(name = "schedule")
+    @Column(name = "schedule",columnDefinition = "text")
     private String schedule;
-    @Column(name = "security_contacts")
+    @Column(name = "security_contacts",columnDefinition = "text")
     private String securityContacts;
-    @Column(name = "safety_precautions")
+    @Column(name = "safety_precautions",columnDefinition = "text")
     private String safetyPrecautions;
     public Long getId() {
         return id;
