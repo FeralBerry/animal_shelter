@@ -1,5 +1,5 @@
 CREATE TABLE reports (
-    id bigint not null primary key,
+    id bigserial primary key,
     text text,
     pet_id bigint,
     FOREIGN KEY (pet_id) REFERENCES pets(id),

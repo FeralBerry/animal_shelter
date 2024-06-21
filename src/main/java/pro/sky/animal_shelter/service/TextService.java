@@ -238,7 +238,9 @@ public class TextService {
         sendMessage.setText(update.getMessage().getText());
         List<SendMessage> sendMessageList = new ArrayList<>();
         sendMessageList.add(sendMessage);
-        sendMessageList.add(messageUtils.generateSendButton(urlService.callVolunteer(update), "Закончить разговор"));
+        if(urlService.callVolunteer(update) != 0L){
+            sendMessageList.add(messageUtils.generateSendButton(urlService.callVolunteer(update), "Закончить разговор"));
+        }
         return sendMessageList;
     }
     /**
@@ -355,8 +357,8 @@ public class TextService {
      */
     private SendMessage adminStatusViewContactInformation(Update update){
         if (isNumeric(update.getMessage().getText())) {
-            return messageUtils.generateSendMessage(update,contactInformationService.deleteContactInformationById(Long.parseLong(update.getMessage().getText() + "\n" +
-                    "Ввели не id или не число.\nДля удаления обратной связи введите ее id, для перехода ко всем командам exit или нажмите /start")));
+            return messageUtils.generateSendMessage(update,contactInformationService.deleteContactInformationById(Long.parseLong(update.getMessage().getText())) + "\n" +
+                    "Ввели не id или не число.\nДля удаления обратной связи введите ее id, для перехода ко всем командам exit или нажмите /start");
         } else if (update.getMessage().getText().equals("exit")) {
             return messageUtils.generateSendButton(update.getMessage().getChatId(),
                     "Главное меню администратора.");

@@ -42,7 +42,7 @@ class CreateButtonServiceTest {
             rowInLine.add(inlineKeyboardButton);
         }
         rowsInLine = List.of(createButtonService.partition(rowInLine, COUNT_BUTTON_USER_ON_SCREEN));
-        assertEquals(rowsInLine,createButtonService.createButtonToMainMenuAdmin());
+        assertEquals(rowsInLine,createButtonService.createButtonToUser());
     }
 
     @Test
@@ -76,9 +76,10 @@ class CreateButtonServiceTest {
         inlineKeyboardButton.setText(PetButtonEnum.PET_BUTTON_PREV.getText());
         inlineKeyboardButton.setCallbackData(PetButtonEnum.PET_BUTTON_PREV.getCommand());
         rowInLine.add(inlineKeyboardButton);
-        inlineKeyboardButton.setText(PetButtonEnum.PET_BUTTON_NEXT.getText());
-        inlineKeyboardButton.setCallbackData(PetButtonEnum.PET_BUTTON_NEXT.getCommand());
-        rowInLine.add(inlineKeyboardButton);
+        InlineKeyboardButton inlineKeyboardButton2 = new InlineKeyboardButton();
+        inlineKeyboardButton2.setText(PetButtonEnum.PET_BUTTON_NEXT.getText());
+        inlineKeyboardButton2.setCallbackData(PetButtonEnum.PET_BUTTON_NEXT.getCommand());
+        rowInLine.add(inlineKeyboardButton2);
         rowsInLine = List.of(rowInLine);
         CreateButtonService createButtonService = new CreateButtonService();
         assertEquals(rowsInLine,createButtonService.createButtonToViewPetList());

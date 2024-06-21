@@ -57,6 +57,7 @@ public class ButtonService {
             if(contactInformationService.getAllContactInformation().isEmpty()){
                 newMessage.append("Пока никто не оставлял заявок на обратную связь.");
                 userStatusService.changeUserStatus(chatId,NO_STATUS.getStatus());
+                sendMessageList.add(messageUtils.generateSendMessage(update, newMessage.toString()));
                 sendMessageList.add(messageUtils.generateSendMessage(update, "Главное меню администратора."));
             } else {
                 for (ContactInformation contactInformation : contactInformationService.getAllContactInformation()){
@@ -125,7 +126,7 @@ public class ButtonService {
         if(callBackData.equals(PET_REPORT.getCommand())){
             // переключить статус пользователя
             userStatusService.changeUserStatus(chatId,"pet_report");
-            String newMessage = "pet_report";// поменять на метод в сервисе
+            String newMessage = petService.getPetForm();
             sendMessageList.add(messageUtils.generateSendMessage(update, newMessage));
             //messageUtils.generateEditMessage(update, newMessage.toString());
         } else if (callBackData.equals(CONTACT_INFORMATION_ADD.getCommand())) {

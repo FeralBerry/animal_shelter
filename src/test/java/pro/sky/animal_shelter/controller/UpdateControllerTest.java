@@ -1,111 +1,83 @@
 package pro.sky.animal_shelter.controller;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.*;
+import pro.sky.animal_shelter.utils.MessageUtils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.mockito.Mockito.doNothing;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 class UpdateControllerTest {
     Update update = new Update();
-    UpdateController updateController = Mockito.mock(UpdateController.class);
-    TelegramBot telegramBot = Mockito.mock(TelegramBot.class);
-
+    @Autowired
+    TelegramBot telegramBot;
+    @Autowired
+    UpdateController updateController;
+    @Autowired
+    MessageUtils messageUtils;
     @Test
     void registerBot() {
-        doNothing()
-                .when(updateController)
-                .registerBot(telegramBot);
+        setUpdate();
+        String consoleOutput;
+        boolean output = false;
+        PrintStream originalOut = System.out;
+        try{
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            PrintStream capture = new PrintStream(outputStream);
+            System.setOut(capture);
+            updateController.registerBot(telegramBot);
+            capture.flush();
+            consoleOutput = outputStream.toString();
+            System.setOut(originalOut);
+            output = consoleOutput.contains("Telegram bot started!");
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        assertTrue(output);
     }
 
     @Test
     void processUpdate() {
-        doNothing()
-                .when(updateController)
-                .processUpdate(null);
+        String consoleOutput;
+        boolean output = false;
+        PrintStream originalOut = System.out;
+        try{
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            PrintStream capture = new PrintStream(outputStream);
+            System.setOut(capture);
+            updateController.processUpdate(null);
+            capture.flush();
+            consoleOutput = outputStream.toString();
+            System.setOut(originalOut);
+            output = consoleOutput.contains("Received update is null");
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        assertTrue(output);
         setUpdate();
-        updateController.processUpdate(null);
-        doNothing()
-                .when(updateController)
-                .processUpdate(update);
-        updateController.processUpdate(update);
         update.setMessage(null);
-        doNothing()
-                .when(updateController)
-                .processUpdate(update);
-        updateController.processUpdate(update);
-    }
-
-    @Test
-    void distributeMessageByType() {
-        Update update = new Update();
-        CallbackQuery callbackQuery = new CallbackQuery();
-        update.setCallbackQuery(callbackQuery);
-        doNothing()
-                .when(updateController)
-                .distributeMessageByType(update);
-        updateController.distributeMessageByType(update);
-
-        Message message = new Message();
-        message.setText("text");
-        update.setMessage(message);
-        updateController.distributeMessageByType(update);
-
-        update = new Update();
-        message = new Message();
-        List<PhotoSize> photoSizeList = new ArrayList<>();
-        message.setPhoto(photoSizeList);
-        updateController.distributeMessageByType(update);
-
-        update = new Update();
-        updateController.distributeMessageByType(update);
-    }
-
-    @Test
-    void setView() {
-        SendMessage sendMessage = new SendMessage();
-        doNothing()
-                .when(updateController)
-                .setView(sendMessage);
-        updateController.setView(sendMessage);
-    }
-
-    @Test
-    void testSetView() {
-        SendMediaGroup sendMediaGroup = new SendMediaGroup();
-        doNothing()
-                .when(updateController)
-                .setView(sendMediaGroup);
-        updateController.setView(sendMediaGroup);
-    }
-
-    @Test
-    void testSetView1() {
-        SendPhoto sendPhoto = new SendPhoto();
-        doNothing()
-                .when(updateController)
-                .setView(sendPhoto);
-        updateController.setView(sendPhoto);
-    }
-
-    @Test
-    void testSetView2() {
-        EditMessageText editMessageText = new EditMessageText();
-        doNothing()
-                .when(updateController)
-                .setView(editMessageText);
-        updateController.setView(editMessageText);
+        try{
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            PrintStream capture = new PrintStream(outputStream);
+            System.setOut(capture);
+            updateController.processUpdate(update);
+            capture.flush();
+            consoleOutput = outputStream.toString();
+            System.setOut(originalOut);
+            output = consoleOutput.contains("Received unsupported message type");
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        assertTrue(output);
     }
     public void setUpdate(){
         update.setUpdateId(193484977);

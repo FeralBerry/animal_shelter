@@ -10,6 +10,7 @@ import pro.sky.animal_shelter.model.User;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,7 +31,7 @@ public class ContactInformationService {
         return MESSAGE;
     }
 
-    /**
+    /** Добавляет телефон пользователя в таблицу ContactInformation. Входной параметр - Update
      * @return возвращаем true сообщение отправлено по формату или false, если не по формату
      */
     public boolean addContactPhone(Update update){
@@ -39,14 +40,15 @@ public class ContactInformationService {
         Pattern pattern = Pattern.compile("^(\\+\\d{1,3}( )?)?((\\(\\d{3}\\))|\\d{3})[- .]?\\d{3}[- .]?\\d{2}[- .]?\\d{2}$");
         Matcher matcher = pattern.matcher(message);
         ContactInformation contactInformation = new ContactInformation();
+        Optional<User> opUser = userRepository.findById(chatId);
         User user;
-        if(userRepository.findById(chatId).isPresent()){
-            user = userRepository.findById(chatId).get();
+        if(opUser.isPresent()){
+            user = opUser.get();
         } else {
             throw new RuntimeException("Пользователя с таким id не существует");
         }
         if(matcher.matches()){
-            contactInformation.setPhone(message);
+            contactInformation .setPhone(message);
             contactInformation.setChatId(user);
             contactInformationRepository.save(contactInformation);
             return true;
@@ -54,7 +56,7 @@ public class ContactInformationService {
         return false;
     }
 
-    /**
+    /**Добавляет имя пользователя в таблицу ContactInformation. На вход принимает Update
      * @return возвращаем true, если сообщение не пустое, или false, если отправлено пустое сообщение
      */
     public boolean addContactName(Update update){
@@ -91,4 +93,5 @@ public class ContactInformationService {
             return "Обратная связь под id не найдена";
         }
     }
+
 }

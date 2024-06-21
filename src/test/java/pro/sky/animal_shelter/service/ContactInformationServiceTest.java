@@ -6,8 +6,10 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
@@ -19,90 +21,124 @@ import pro.sky.animal_shelter.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 class ContactInformationServiceTest {
     Update update = new Update();
-    @Mock
+
+    User user = new User();
+
+    @MockBean
     ContactInformationRepository contactInformationRepository;
-    @Mock
+
+    @MockBean
     UserRepository userRepository;
-    ContactInformationService contactInformationService = new ContactInformationService(userRepository, contactInformationRepository);
-    ContactInformationService contactInformationServiceMock = Mockito.mock(ContactInformationService.class);
+
+
+    @Autowired
+    ContactInformationService contactInformationService;
+
+
+    private static final long TEST_CHAT_ID = 982721415L;
+
+    private static final String TEST_NAME = "Вася";
+
+    private static final String TEST_PHONE = "+7(999)9999999";
+    private static final String TEST_WRONG_PHONE = "+7-999-999-99-99";
+
+
+
+    //ContactInformationService contactInformationServiceMock = Mockito.mock(ContactInformationService.class);
     @Test
-    void getContactInformation() {
+    public void getContactInformation() {
         String expected = "Введите номер телефона в формате: +7-9**-***-**-**";
         assertEquals(expected,contactInformationService.getContactInformation());
     }
     @Test
-    void addContactPhone() {
+
+    public void addContactPhonePositiveTest() {
         setUpdate();
-        doReturn(true)
-                .when(contactInformationServiceMock)
-                .addContactPhone(update);
-        assertTrue(contactInformationServiceMock.addContactName(update));
+        setUser();
+        Message message = update.getMessage();
+        message.setText(TEST_PHONE);
+        update.setMessage(message);
+        when(userRepository.findById(TEST_CHAT_ID)).thenReturn(Optional.of(user));
+        assertTrue(contactInformationService.addContactPhone(update));
+
     }
     @Test
-    void addContactName() {
+    public void addContactPhoneNegativeTestWhenNoUser(){
         setUpdate();
-        doReturn(true)
-                .when(contactInformationServiceMock)
-                .addContactName(update);
-        assertTrue(contactInformationServiceMock.addContactName(update));
+        when(userRepository.findById(any())).thenReturn(Optional.ofNullable(null));
+        assertThrows(RuntimeException.class, () -> {
+            contactInformationService.addContactPhone(update);
+        });
     }
-
-    @ParameterizedTest
-    @MethodSource("contacts")
-    void getAllContactInformation(List<ContactInformation> contactInformations) {
-        doReturn(contactInformations)
-                .when(contactInformationServiceMock)
-                .getAllContactInformation();
-        assertEquals(contactInformations,contactInformationServiceMock.getAllContactInformation());
+    @Test
+    public void addContactPhoneNegativeTestWhenDoesNotMatch(){
+        setUpdate();
+        Message message = update.getMessage();
+        message.setText(TEST_WRONG_PHONE);
+        update.setMessage(message);
+        setUser();
+        when(userRepository.findById(TEST_CHAT_ID)).thenReturn(Optional.of(user));
+        assertFalse(contactInformationService.addContactPhone(update));
     }
-
-    @ParameterizedTest
-    @MethodSource("contacts")
-    void deleteContactInformationByIdPositive(List<ContactInformation> contactInformations) {
-        doReturn("Обратная связь под id: 1 успешно удалена")
-                .when(contactInformationServiceMock)
-                .deleteContactInformationById(1);
-        assertEquals("Обратная связь под id: 1 успешно удалена",contactInformationServiceMock.deleteContactInformationById(1));
-    }
-    @ParameterizedTest
-    @MethodSource("contacts")
-    void deleteContactInformationByIdNegative(List<ContactInformation> contactInformations) {
-        int index = 5;
-        if(index >= contactInformations.size()){
-            doReturn("Обратная связь под id не найдена")
-                    .when(contactInformationServiceMock)
-                    .deleteContactInformationById(index);
-        }
-        assertEquals("Обратная связь под id не найдена",contactInformationServiceMock.deleteContactInformationById(index));
-    }
-    static Stream<Arguments> contacts(){
-        User user = new User();
-        user.setChatId(1L);
+    @Test
+    public void  addContactNamePositiveTest(){
+        setUpdate();
+        Message message = update.getMessage();
+        message.setText(TEST_NAME);
+        update.setMessage(message);
         ContactInformation contactInformation = new ContactInformation();
-        contactInformation.setId(1L);
-        contactInformation.setName("Имя");
-        contactInformation.setChatId(user);
-        contactInformation.setPhone("телефон");
-        ContactInformation contactInformation1 = new ContactInformation();
-        user.setChatId(2L);
-        contactInformation.setId(2L);
-        contactInformation.setName("Имя");
-        contactInformation.setChatId(user);
-        contactInformation.setPhone("телефон");
-        return Stream.of(
-                Arguments.of(List.of(
-                        contactInformation,
-                        contactInformation1
-                )));
+        when(contactInformationRepository.findById(TEST_CHAT_ID)).thenReturn(Optional.of(contactInformation));
+        assertTrue(contactInformationService.addContactName(update));
     }
+    @Test
+    public void addContactNameNegativeTestWhenMessageTextIsEmpty(){
+        setUpdate();
+        Message message = update.getMessage();
+        message.setText("");
+        update.setMessage(message);
+        assertFalse(contactInformationService.addContactName(update));
+    }
+    @Test
+    public void addContactNameNegativeTestWhenNoContactInformation(){
+        setUpdate();
+        Message message = update.getMessage();
+        message.setText(TEST_NAME);
+        update.setMessage(message);
+        when(contactInformationRepository.findById(TEST_CHAT_ID)).thenReturn(Optional.ofNullable(null));
+        assertThrows(NoSuchElementException.class, () -> {
+            contactInformationService.addContactName(update);
+        });
+    }
+    @Test
+    public void getAllContactInformationPositiveTest(){
+        List<ContactInformation> contactInformations = List.of(new ContactInformation());
+        when(contactInformationRepository.findAll()).thenReturn(contactInformations);
+        assertEquals(contactInformationService.getAllContactInformation(), contactInformations);
+    }
+    @Test
+    public void deleteContactInformationByIdPositiveTest(){
+        ContactInformation contactInformation = new ContactInformation();
+        when(contactInformationRepository.findById(TEST_CHAT_ID)).thenReturn(Optional.of(contactInformation));
+        assertEquals(contactInformationService.deleteContactInformationById(TEST_CHAT_ID), "Обратная связь под id: " + TEST_CHAT_ID + " успешно удалена");
+    }
+    @Test
+    public void deleteContactInformationByIdNegativeTest(){
+        when(contactInformationRepository.findById(TEST_CHAT_ID)).thenReturn(Optional.ofNullable(null));
+        assertEquals(contactInformationService.deleteContactInformationById(TEST_CHAT_ID), "Обратная связь под id не найдена");
+    }
+
     public void setUpdate(){
         update.setUpdateId(193484977);
         Message message = new Message();
@@ -110,7 +146,7 @@ class ContactInformationServiceTest {
         message.setMessageThreadId(null);
         message.setDate(1717508990);
         org.telegram.telegrambots.meta.api.objects.User user = new org.telegram.telegrambots.meta.api.objects.User();
-        user.setId(982721415L);
+        user.setId(TEST_CHAT_ID);
         user.setUserName("Compas1990");
         user.setFirstName("Compas");
         user.setIsBot(false);
@@ -126,7 +162,7 @@ class ContactInformationServiceTest {
         chat.setUserName("Compas1990");
         chat.setFirstName("Compas");
         chat.setLastName(null);
-        chat.setId(982721415L);
+        chat.setId(TEST_CHAT_ID);
         chat.setType("private");
         chat.setTitle(null);
         chat.setPhoto(null);
@@ -155,7 +191,7 @@ class ContactInformationServiceTest {
         message.setForwardFrom(null);
         message.setForwardFromChat(null);
         message.setForwardDate(null);
-        message.setText("/start");
+        message.setText(null);
         MessageEntity messageEntity = new MessageEntity();
         List<MessageEntity> entityList = new ArrayList<>();
         messageEntity.setType("bot_command");
@@ -165,7 +201,7 @@ class ContactInformationServiceTest {
         messageEntity.setUser(null);
         messageEntity.setLanguage(null);
         messageEntity.setCustomEmojiId(null);
-        messageEntity.setText("/start");
+        messageEntity.setText(TEST_PHONE);
         entityList.add(messageEntity);
         message.setEntities(entityList);
         message.setCaptionEntities(null);
@@ -243,5 +279,15 @@ class ContactInformationServiceTest {
         update.setMyChatMember(null);
         update.setChatMember(null);
         update.setChatJoinRequest(null);
+    }
+    public void setUser(){
+        user.setChatId(TEST_CHAT_ID);
+        user.setFirstName("1");
+        user.setLastName("1");
+        user.setUserName("1");
+        user.setRole("1");
+        user.setLocationUserOnApp("1");
+        user.setPetId(null);
+        user.setAddedPetId(null);
     }
 }

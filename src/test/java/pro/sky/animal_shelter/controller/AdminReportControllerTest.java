@@ -10,6 +10,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import pro.sky.animal_shelter.model.Adoption;
 import pro.sky.animal_shelter.model.Report;
 import pro.sky.animal_shelter.model.Repositories.AdoptionRepository;
@@ -17,9 +18,7 @@ import pro.sky.animal_shelter.model.Repositories.ReportRepository;
 import pro.sky.animal_shelter.model.Repositories.UserRepository;
 import pro.sky.animal_shelter.model.User;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.mockito.Mockito.doReturn;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -38,24 +37,21 @@ class AdminReportControllerTest {
     @Test
     void getStartMessage() throws Exception {
         JSONObject jsonObject = new JSONObject();
+        User user = new User();
+        user.setChatId(1L);
         Long id = 1L;
         String text = "text";
-        Long chatId = 1L;
         Long updatedAt = 1L;
         Boolean checked = false;
         Boolean looked = false;
         jsonObject.put("id",id);
         jsonObject.put("text",text);
-        jsonObject.put("chatId",chatId);
         jsonObject.put("updatedAt",updatedAt);
         jsonObject.put("checked",checked);
         jsonObject.put("looked",looked);
         List<Report> reportList = new ArrayList<>();
         Report report = new Report();
-        User user = new User();
-        report.setChatId(user);
         report.setText(text);
-        report.setChatId(user);
         report.setUpdatedAt(updatedAt);
         report.setChecked(checked);
         report.setLooked(looked);
@@ -70,7 +66,6 @@ class AdminReportControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].text").value(text))
-                .andExpect(jsonPath("$[0].chatId").value(chatId))
                 .andExpect(jsonPath("$[0].updatedAt").value(updatedAt))
                 .andExpect(jsonPath("$[0].checked").value(checked))
                 .andExpect(jsonPath("$[0].looked").value(looked));
@@ -81,21 +76,16 @@ class AdminReportControllerTest {
         JSONObject jsonObject = new JSONObject();
         Long id = 1L;
         String text = "text";
-        Long chatId = 1L;
         Long updatedAt = 1L;
         Boolean checked = false;
         Boolean looked = false;
         jsonObject.put("id",id);
         jsonObject.put("text",text);
-        jsonObject.put("chatId",chatId);
         jsonObject.put("updatedAt",updatedAt);
         jsonObject.put("checked",checked);
         jsonObject.put("looked",looked);
         Report report = new Report();
-        User user = new User();
-        report.setChatId(user);
         report.setText(text);
-        report.setChatId(user);
         report.setUpdatedAt(updatedAt);
         report.setChecked(checked);
         report.setLooked(looked);
@@ -109,7 +99,6 @@ class AdminReportControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.text").value(text))
-                .andExpect(jsonPath("$.chatId").value(chatId))
                 .andExpect(jsonPath("$.updatedAt").value(updatedAt))
                 .andExpect(jsonPath("$.checked").value(checked))
                 .andExpect(jsonPath("$.looked").value(looked));
@@ -136,10 +125,14 @@ class AdminReportControllerTest {
     void incorrectReportById() throws Exception {
         JSONObject jsonObject = (JSONObject) testObj().get(0);
         Report report = (Report) testObj().get(1);
+        User user = new User();
+        user.setChatId(1L);
+        report.setChatId(user);
         Long id = 1L;
         doReturn(Optional.of(report))
                 .when(reportRepository)
                 .findById(id);
+
         mockMvc.perform(MockMvcRequestBuilders
                         .get("/api/admin/incorrect-report/" + id)
                         .content(jsonObject.toString())
@@ -153,6 +146,8 @@ class AdminReportControllerTest {
         JSONObject jsonObject = (JSONObject) testObj().get(0);
         Report report = (Report) testObj().get(1);
         User user = new User();
+        user.setChatId(1L);
+        report.setChatId(user);
         doReturn(report)
                 .when(reportRepository)
                 .findByChatId(report.getChatId().getChatId());
@@ -167,7 +162,7 @@ class AdminReportControllerTest {
                 .when(adoptionRepository)
                 .save(adoption);
         mockMvc.perform(MockMvcRequestBuilders
-                        .post("/api/admin/increase-the-adaptation-period/14day/" + report.getChatId())
+                        .post("/api/admin/increase-the-adaptation-period/14day/" + report.getChatId().getChatId())
                         .content(jsonObject.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -179,6 +174,8 @@ class AdminReportControllerTest {
         JSONObject jsonObject = (JSONObject) testObj().get(0);
         Report report = (Report) testObj().get(1);
         User user = new User();
+        user.setChatId(1L);
+        report.setChatId(user);
         doReturn(report)
                 .when(reportRepository)
                 .findByChatId(report.getChatId().getChatId());
@@ -193,7 +190,7 @@ class AdminReportControllerTest {
                 .when(adoptionRepository)
                 .save(adoption);
         mockMvc.perform(MockMvcRequestBuilders
-                        .post("/api/admin/increase-the-adaptation-period/30day/" + report.getChatId())
+                        .post("/api/admin/increase-the-adaptation-period/30day/" + report.getChatId().getChatId())
                         .content(jsonObject.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
