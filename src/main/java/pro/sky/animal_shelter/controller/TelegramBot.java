@@ -35,7 +35,7 @@ import java.util.List;
 
 @Controller
 @Slf4j
-public class TelegramBot extends TelegramLongPollingBot {
+public class  TelegramBot extends TelegramLongPollingBot {
     @Value("${telegram.bot.token}")
     private String token;
     @Value("${telegram.bot.name}")
@@ -45,7 +45,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final CallRepository callRepository;
     private final UserStatusService userStatusService;
     private final ReportService reportService;
-    public TelegramBot(UpdateController updateController, AdminReportController adminReportController, CallRepository callRepository, UserStatusService userStatusService, ReportService reportService){
+    public TelegramBot(UpdateController updateController, AdminReportController adminReportController,
+                       CallRepository callRepository, UserStatusService userStatusService, ReportService reportService){
         this.updateController = updateController;
         this.adminReportController = adminReportController;
         this.callRepository = callRepository;
