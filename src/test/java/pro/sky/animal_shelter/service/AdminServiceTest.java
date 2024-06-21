@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 @AutoConfigureMockMvc
 class AdminServiceTest {
     @MockBean
-    UserRepository userRepository = Mockito.mock(UserRepository.class);
+    UserRepository userRepository;
     Update update = new Update();
     @Autowired
     AdminService adminService;

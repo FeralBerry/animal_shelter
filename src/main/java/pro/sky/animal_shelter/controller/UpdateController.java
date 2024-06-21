@@ -40,6 +40,7 @@ public class UpdateController {
     }
     public void registerBot(TelegramBot telegramBot){
         this.telegramBot = telegramBot;
+        log.info("Telegram bot started!");
     }
     public void processUpdate(Update update){
         if(update == null){

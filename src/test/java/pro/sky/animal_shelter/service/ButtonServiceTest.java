@@ -1,41 +1,343 @@
 package pro.sky.animal_shelter.service;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Chat;
-import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.MessageEntity;
-import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.*;
+import pro.sky.animal_shelter.model.Call;
+import pro.sky.animal_shelter.model.ContactInformation;
+import pro.sky.animal_shelter.model.Pet;
+import pro.sky.animal_shelter.model.Repositories.CallRepository;
+import pro.sky.animal_shelter.model.Repositories.ContactInformationRepository;
+import pro.sky.animal_shelter.model.Repositories.PetRepository;
+import pro.sky.animal_shelter.model.Repositories.UserRepository;
 import pro.sky.animal_shelter.utils.MessageUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doReturn;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
+import static pro.sky.animal_shelter.enums.AdminButtonMenuEnum.*;
+import static pro.sky.animal_shelter.enums.PetButtonEnum.PET_BUTTON_NEXT;
+import static pro.sky.animal_shelter.enums.PetButtonEnum.PET_BUTTON_PREV;
+import static pro.sky.animal_shelter.enums.UserButtonEnum.CONTACT_INFORMATION_ADD;
+import static pro.sky.animal_shelter.enums.UserButtonEnum.PET_REPORT;
 
+@SpringBootTest
+@AutoConfigureMockMvc
 class ButtonServiceTest {
     Update update = new Update();
-    @Mock
+    @MockBean
+    UserRepository userRepository;
+    @MockBean
+    ContactInformationRepository contactInformationRepository;
+    @MockBean
+    PetRepository petRepository;
+    @MockBean
+    CallRepository callRepository;
+    @MockBean
     AdminService adminService;
-    @Mock
+    @Autowired
     UserStatusService userStatusService;
-    @Mock
+    @Autowired
+    ContactInformationService contactInformationService;
+    @Autowired
+    PetService petService;
+    @Autowired
+    MessageUtils messageUtils;
+    @Autowired
     CreateButtonService createButtonService;
-    MessageUtils messageUtils = new MessageUtils(adminService,userStatusService,createButtonService);
-    ButtonService buttonService = Mockito.mock(ButtonService.class);
+    @Autowired
+    ButtonService buttonService;
     @Test
     void defineCommand() {
         setUpdate();
+        CallbackQuery callbackQuery = new CallbackQuery();
+        Message message = new Message();
+        Chat chat = new Chat();
+        chat.setId(1L);
+        message.setChat(chat);
+        callbackQuery.setMessage(message);
+        User user = new User();
+        user.setId(1L);
+        callbackQuery.setFrom(user);
+        update.setCallbackQuery(callbackQuery);
+        SendMessage sendMessage = new SendMessage();
         List<SendMessage> sendMessageList = new ArrayList<>();
-        SendMessage sendMessage = messageUtils.generateSendMessage(update.getMessage().getChatId(),"Сообщение");
-        sendMessageList.add(sendMessage);
-        doReturn(sendMessageList)
-                .when(buttonService)
-                .defineCommand(update);
-        assertEquals(sendMessageList,buttonService.defineCommand(update));
+        long chatId = update.getCallbackQuery().getFrom().getId();
+        // ifAdmin
+        {
+            doReturn(true)
+                    .when(adminService)
+                    .checkAdmin(update.getCallbackQuery().getMessage().getChatId());
+            {
+                StringBuilder newMessage = new StringBuilder();
+                callbackQuery.setData(VIEW_CONTACT_INFORMATION_COMMAND.getCommand());
+                update.setCallbackQuery(callbackQuery);
+                {
+                    doReturn(List.of())
+                            .when(contactInformationRepository)
+                            .findAll();
+                    newMessage.append("Пока никто не оставлял заявок на обратную связь.");
+                    sendMessageList.add(messageUtils.generateSendMessage(update, newMessage.toString()));
+                    sendMessageList.add(messageUtils.generateSendMessage(update, "Главное меню администратора."));
+                    assertEquals(sendMessageList,buttonService.defineCommand(update));
+                    sendMessageList.clear();
+                }
+                {
+                    newMessage = new StringBuilder();
+                    ContactInformation contactInformation = new ContactInformation();
+                    contactInformation.setId(1L);
+                    contactInformation.setPhone("111");
+                    contactInformation.setName("qqq");
+                    doReturn(List.of(contactInformation))
+                            .when(contactInformationRepository)
+                            .findAll();
+                    newMessage.append(contactInformation.toString()).append("\n");
+                    newMessage.append("Для удаления обратной связи введите ее id, для перехода ко всем командам exit или нажмите /start");
+                    sendMessageList.add(messageUtils.generateSendMessage(update, newMessage.toString()));
+                    assertEquals(sendMessageList,buttonService.defineCommand(update));
+                    sendMessageList.clear();
+                }
+                callbackQuery.setData(PET_ADD_COMMAND.getCommand());
+                update.setCallbackQuery(callbackQuery);
+                {
+                    sendMessage.setChatId(chatId);
+                    sendMessage.setText("Введите имя питомца.");
+                    sendMessageList.add(sendMessage);
+                    assertEquals(sendMessageList,buttonService.defineCommand(update));
+                    sendMessageList.clear();
+                }
+                callbackQuery.setData(ADD_ABOUT.getCommand());
+                update.setCallbackQuery(callbackQuery);
+                {
+                    sendMessage.setChatId(chatId);
+                    sendMessage.setText("Введите название приюта.");
+                    sendMessageList.add(sendMessage);
+                    assertEquals(sendMessageList,buttonService.defineCommand(update));
+                    sendMessageList.clear();
+                }
+                callbackQuery.setData(ADD_INFO.getCommand());
+                update.setCallbackQuery(callbackQuery);
+                {
+                    sendMessage.setChatId(chatId);
+                    sendMessage.setText("Введите правила как забрать животное из приюта.");
+                    sendMessageList.add(sendMessage);
+                    assertEquals(sendMessageList,buttonService.defineCommand(update));
+                    sendMessageList.clear();
+                }
+                callbackQuery.setData(PET_BUTTON_PREV.getCommand());
+                update.setCallbackQuery(callbackQuery);
+                {
+                    Pet pet = new Pet();
+                    pet.setId(1L);
+                    pet.setPetName("ff");
+                    pet.setDescription("ff");
+                    String description = pet.getDescription();
+                    String petName = pet.getPetName();
+                    pro.sky.animal_shelter.model.User user1 = new pro.sky.animal_shelter.model.User();
+                    user1.setLocationUserOnApp("view_pet_list");
+                    user1.setChatId(1L);
+                    user1.setPetId(pet);
+                    {
+                        doReturn(Optional.of(user1))
+                                .when(userRepository)
+                                .findById(update.getMessage().getChatId());
+                        doReturn(List.of(pet))
+                                .when(petRepository)
+                                .findAll();
+                        doReturn(Optional.of(pet))
+                                .when(petRepository)
+                                .findById(1L);
+                        sendMessage = messageUtils.generateSendButton(chatId,"");
+
+                        sendMessage.setChatId(chatId);
+                        sendMessage.setText(petName + "\n" + description);
+                        sendMessageList.add(sendMessage);
+                        assertEquals(sendMessageList,buttonService.defineCommand(update));
+                        sendMessageList.clear();
+                    }
+                }
+                callbackQuery.setData(PET_BUTTON_NEXT.getCommand());
+                update.setCallbackQuery(callbackQuery);
+                {
+                    Pet pet = new Pet();
+                    pet.setId(1L);
+                    pet.setPetName("ff");
+                    pet.setDescription("ff");
+                    String description = pet.getDescription();
+                    String petName = pet.getPetName();
+                    pro.sky.animal_shelter.model.User user1 = new pro.sky.animal_shelter.model.User();
+                    user1.setLocationUserOnApp("view_pet_list");
+                    user1.setChatId(1L);
+                    user1.setPetId(pet);
+                    {
+                        doReturn(Optional.of(user1))
+                                .when(userRepository)
+                                .findById(update.getMessage().getChatId());
+                        doReturn(List.of(pet))
+                                .when(petRepository)
+                                .findAll();
+                        doReturn(Optional.of(pet))
+                                .when(petRepository)
+                                .findById(1L);
+                        sendMessage = messageUtils.generateSendButton(chatId,"");
+
+                        sendMessage.setChatId(chatId);
+                        sendMessage.setText(petName + "\n" + description);
+                        sendMessageList.add(sendMessage);
+                        assertEquals(sendMessageList,buttonService.defineCommand(update));
+                        sendMessageList.clear();
+                    }
+                }
+                callbackQuery.setData("close_call");
+                update.setCallbackQuery(callbackQuery);
+                {
+                    sendMessage = new SendMessage();
+                    sendMessage.setChatId(chatId);
+                    sendMessage.setText("Чат с пользователем был закрыт");
+                    sendMessageList.add(sendMessage);
+                    Call call = new Call();
+                    pro.sky.animal_shelter.model.User user1 = new pro.sky.animal_shelter.model.User();
+                    user1.setChatId(1L);
+                    call.setId(1L);
+                    call.setAdminChatId(user1);
+                    call.setUserChatId(user1);
+                    when(callRepository.findByAdminChatId(update.getCallbackQuery().getFrom().getId())).thenReturn(call);
+                    doReturn(Optional.of(user1))
+                            .when(userRepository)
+                            .findById(chatId);
+                    sendMessage.setChatId(call.getUserChatId().getChatId());
+                    sendMessage.setText("Чат был закрыт для нового обращения /to_call_a_volunteer");
+                    sendMessageList.add(sendMessage);
+                    assertEquals(sendMessageList,buttonService.defineCommand(update));
+                    sendMessageList.clear();
+                }
+            }
+        }
+        // ifUser
+        {
+            doReturn(false)
+                    .when(adminService)
+                    .checkAdmin(update.getCallbackQuery().getMessage().getChatId());
+            {
+                callbackQuery.setData(PET_REPORT.getCommand());
+                update.setCallbackQuery(callbackQuery);
+                {
+                    String newMessage = """
+            В ежедневный отчет входит следующая информация:
+            - Фото животного
+            - Рацион животного
+            - Общее самочувствие и привыкание к новому месту
+            - Изменения в поведении: отказ от старых привычек, приобретение новых
+
+            Отчет нужно присылать каждый день, ограничений в сутках по времени сдачи отчета нет.""";
+                    sendMessageList.add(messageUtils.generateSendMessage(update, newMessage));
+                    assertEquals(sendMessageList,buttonService.defineCommand(update));
+                    sendMessageList.clear();
+                }
+                callbackQuery.setData(CONTACT_INFORMATION_ADD.getCommand());
+                update.setCallbackQuery(callbackQuery);
+                {
+                    String MESSAGE= "Введите номер телефона в формате: +7-9**-***-**-**";
+                    sendMessageList.add(messageUtils.generateSendMessage(update, MESSAGE));
+                    assertEquals(sendMessageList,buttonService.defineCommand(update));
+                    sendMessageList.clear();
+                }
+                callbackQuery.setData(PET_BUTTON_PREV.getCommand());
+                update.setCallbackQuery(callbackQuery);
+                {
+                    Pet pet = new Pet();
+                    pet.setId(1L);
+                    pet.setPetName("ff");
+                    pet.setDescription("ff");
+                    String description = pet.getDescription();
+                    String petName = pet.getPetName();
+                    pro.sky.animal_shelter.model.User user1 = new pro.sky.animal_shelter.model.User();
+                    user1.setLocationUserOnApp("view_pet_list");
+                    user1.setChatId(1L);
+                    user1.setPetId(pet);
+                    {
+                        doReturn(Optional.of(user1))
+                                .when(userRepository)
+                                .findById(update.getMessage().getChatId());
+                        doReturn(List.of(pet))
+                                .when(petRepository)
+                                .findAll();
+                        doReturn(Optional.of(pet))
+                                .when(petRepository)
+                                .findById(1L);
+                        sendMessage = messageUtils.generateSendButton(chatId,"");
+
+                        sendMessage.setChatId(chatId);
+                        sendMessage.setText(petName + "\n" + description);
+                        sendMessageList.add(sendMessage);
+                        assertEquals(sendMessageList,buttonService.defineCommand(update));
+                        sendMessageList.clear();
+                    }
+                }
+                callbackQuery.setData(PET_BUTTON_NEXT.getCommand());
+                update.setCallbackQuery(callbackQuery);
+                {
+                    Pet pet = new Pet();
+                    pet.setId(1L);
+                    pet.setPetName("ff");
+                    pet.setDescription("ff");
+                    String description = pet.getDescription();
+                    String petName = pet.getPetName();
+                    pro.sky.animal_shelter.model.User user1 = new pro.sky.animal_shelter.model.User();
+                    user1.setLocationUserOnApp("view_pet_list");
+                    user1.setChatId(1L);
+                    user1.setPetId(pet);
+                    {
+                        doReturn(Optional.of(user1))
+                                .when(userRepository)
+                                .findById(update.getMessage().getChatId());
+                        doReturn(List.of(pet))
+                                .when(petRepository)
+                                .findAll();
+                        doReturn(Optional.of(pet))
+                                .when(petRepository)
+                                .findById(1L);
+                        sendMessage = messageUtils.generateSendButton(chatId,"");
+
+                        sendMessage.setChatId(chatId);
+                        sendMessage.setText(petName + "\n" + description);
+                        sendMessageList.add(sendMessage);
+                        assertEquals(sendMessageList,buttonService.defineCommand(update));
+                        sendMessageList.clear();
+                    }
+                }
+                callbackQuery.setData("close_call");
+                update.setCallbackQuery(callbackQuery);
+                {
+                    sendMessage = new SendMessage();
+                    sendMessage.setChatId(chatId);
+                    sendMessage.setText("Чат с пользователем был закрыт");
+                    sendMessageList.add(sendMessage);
+                    Call call = new Call();
+                    pro.sky.animal_shelter.model.User user1 = new pro.sky.animal_shelter.model.User();
+                    user1.setChatId(1L);
+                    call.setId(1L);
+                    call.setAdminChatId(user1);
+                    call.setUserChatId(user1);
+                    when(callRepository.findByUserChatId(update.getCallbackQuery().getFrom().getId())).thenReturn(call);
+                    doReturn(Optional.of(user1))
+                            .when(userRepository)
+                            .findById(chatId);
+                    sendMessage.setChatId(call.getAdminChatId().getChatId());
+                    sendMessage.setText("Чат был закрыт для нового обращения /to_call_a_volunteer");
+                    sendMessageList.add(sendMessage);
+                    assertEquals(sendMessageList,buttonService.defineCommand(update));
+                    sendMessageList.clear();
+                }
+            }
+        }
     }
     public void setUpdate(){
         update.setUpdateId(193484977);

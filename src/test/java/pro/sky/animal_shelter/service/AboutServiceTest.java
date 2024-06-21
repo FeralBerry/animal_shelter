@@ -25,7 +25,7 @@ class AboutServiceTest {
     @Autowired
     AboutService aboutService;
     @Test
-    void aboutPositive() {
+    void about() {
         List<About> aboutList = new ArrayList<>();
         aboutList.add(getAbout());
         when(aboutRepository.findAll()).thenReturn(aboutList);
@@ -36,9 +36,7 @@ class AboutServiceTest {
             message.append(value.getSecurityContacts()).append("\n");
         }
         assertEquals(aboutService.about(),message.toString());
-    }
-    @Test
-    void aboutNegative() {
+
         when(aboutRepository.findAll()).thenReturn(List.of());
         assertEquals(aboutService.about(), "Описание пока отсутствует");
     }

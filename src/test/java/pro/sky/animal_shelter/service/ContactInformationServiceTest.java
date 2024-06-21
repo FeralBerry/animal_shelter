@@ -63,6 +63,7 @@ class ContactInformationServiceTest {
         assertEquals(expected,contactInformationService.getContactInformation());
     }
     @Test
+
     public void addContactPhonePositiveTest() {
         setUpdate();
         setUser();
@@ -71,6 +72,7 @@ class ContactInformationServiceTest {
         update.setMessage(message);
         when(userRepository.findById(TEST_CHAT_ID)).thenReturn(Optional.of(user));
         assertTrue(contactInformationService.addContactPhone(update));
+
     }
     @Test
     public void addContactPhoneNegativeTestWhenNoUser(){
