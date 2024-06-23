@@ -25,7 +25,8 @@ public class InfoService {
         StringBuilder message = new StringBuilder();
         var info = infoRepository.findAll();
         if(info.isEmpty()){
-            message.append("Описание пока отсутствует");
+            message.append("Описание пока отсутствует")
+                    .append("\n");
         } else {
             for (Info info1 : info) {
                 message.append(info1.getDocuments())

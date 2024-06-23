@@ -121,13 +121,10 @@ public class UpdateController {
     }
     private void processButtonMessage(Update update) {
         String callBackData = update.getCallbackQuery().getData();
-        long chatId = update.getCallbackQuery().getFrom().getId();
         if(callBackData.equals(PET_BUTTON_PREV.getCommand())) {
-            petService.changePrevPetView(chatId);
-            petListPhotos(update);
+            petService.changePrevPetView(update);
         } else if(callBackData.equals(PET_BUTTON_NEXT.getCommand())) {
-            petService.changeNextPetView(chatId);
-            petListPhotos(update);
+            petService.changeNextPetView(update);
         }
         for (SendMessage msg : buttonService.defineCommand(update)){
             setView(msg);

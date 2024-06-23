@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 @Service
 public class ContactInformationService {
     private final UserRepository userRepository;
-    private final static String MESSAGE= "Введите номер телефона в формате: +7-9**-***-**-**";
+    private final static String MESSAGE= "Введите номер телефона в формате: +7 9** ***-**-**";
     private final ContactInformationRepository contactInformationRepository;
     public ContactInformationService(UserRepository userRepository, ContactInformationRepository contactInformationRepository){
         this.userRepository = userRepository;
@@ -42,16 +42,26 @@ public class ContactInformationService {
         ContactInformation contactInformation = new ContactInformation();
         Optional<User> opUser = userRepository.findById(chatId);
         User user;
+        var contactInformationById = contactInformationRepository.findByUserId(chatId);
         if(opUser.isPresent()){
             user = opUser.get();
         } else {
             throw new RuntimeException("Пользователя с таким id не существует");
         }
-        if(matcher.matches()){
-            contactInformation .setPhone(message);
-            contactInformation.setChatId(user);
-            contactInformationRepository.save(contactInformation);
-            return true;
+        if(contactInformationById.isEmpty()){
+            if(matcher.matches()){
+                contactInformation.setPhone(message);
+                contactInformation.setChatId(user);
+                contactInformationRepository.save(contactInformation);
+                return true;
+            }
+        } else {
+            if(matcher.matches()){
+                contactInformationById.get().setPhone(message);
+                contactInformationById.get().setChatId(user);
+                contactInformationRepository.save(contactInformationById.get());
+                return true;
+            }
         }
         return false;
     }
@@ -62,11 +72,13 @@ public class ContactInformationService {
     public boolean addContactName(Update update){
         String message = update.getMessage().getText();
         long chatId = update.getMessage().getChatId();
+        ContactInformation contactInformation;
         if(message.isEmpty()){
             return false;
         } else {
-            if(contactInformationRepository.findById(chatId).isPresent()){
-                ContactInformation contactInformation = contactInformationRepository.findById(chatId).get();
+            var contactInformationById = contactInformationRepository.findByUserId(chatId);
+            if(contactInformationById.isPresent()){
+                contactInformation = contactInformationById.get();
                 contactInformation.setName(message);
                 contactInformationRepository.save(contactInformation);
                 return true;

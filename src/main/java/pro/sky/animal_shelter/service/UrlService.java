@@ -1,8 +1,11 @@
 package pro.sky.animal_shelter.service;
 
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import pro.sky.animal_shelter.controller.TelegramBot;
 import pro.sky.animal_shelter.model.Pet;
 import pro.sky.animal_shelter.utils.MessageUtils;
 
@@ -23,6 +26,11 @@ public class UrlService {
     private final ContactInformationService contactInformationService;
     private final CallService callService;
     private final MessageUtils messageUtils;
+    private TelegramBot telegramBot;
+    public void registerBot(TelegramBot telegramBot){
+        this.telegramBot = telegramBot;
+    }
+
     public UrlService(AdminService adminService,
                       UserStatusService userStatusService,
                       StartService startService,
@@ -80,8 +88,7 @@ public class UrlService {
                     contactInformation(update)));
         }
         else if (message.equals(TO_CALL_A_VOLUNTEER.url())) {
-            callVolunteer(update);
-            if(callVolunteer(update) == 0){
+            if(callVolunteer(update) == 0L){
                 list.add(messageUtils.generateSendMessage(update,
                         "Пока что все волонтеры заняты"));
             } else {
@@ -98,13 +105,26 @@ public class UrlService {
         else if (message.equals(PET_LIST.url())) {
             SendMessage sendMessage;
             Pet petView = petService.getPet(update);
-            String description = petView.getDescription();
-            String petName = petView.getPetName();
-            userStatusService.changeUserStatus(update, VIEW_PET_LIST.getStatus());
             sendMessage = messageUtils.generateSendButton(chatId,"");
-            sendMessage.setChatId(chatId);
-            sendMessage.setText(petName + "\n" + description);
-            list.add(sendMessage);
+            if(petView == null){
+                sendMessage.setChatId(chatId);
+                sendMessage.setText("Питомцы все разобраны");
+                list.add(sendMessage);
+            } else {
+                String description = petView.getDescription();
+                String petName = petView.getPetName();
+                userStatusService.changeUserStatus(update, VIEW_PET_LIST.getStatus());
+                if(petService.getPetImages(update).size() > 1){
+                    SendMediaGroup sendMediaGroups = messageUtils.sendMediaGroup(update.getMessage().getChatId(), petService.getPetImages(update));
+                    setView(sendMediaGroups);
+                } else {
+                    SendPhoto sendPhoto = messageUtils.sendPhoto(update.getMessage().getChatId(),petService.getPetImages(update).get(0));
+                    setView(sendPhoto);
+                }
+                sendMessage.setChatId(chatId);
+                sendMessage.setText(petName + "\n" + description);
+                list.add(sendMessage);
+            }
         }
         return list;
     }
@@ -155,5 +175,11 @@ public class UrlService {
      */
     public Long callVolunteer(Update update){
         return callService.createCall(update);
+    }
+    public void setView(SendMediaGroup sendMediaGroup) {
+        telegramBot.sendAnswerMessage(sendMediaGroup);
+    }
+    public void setView(SendPhoto sendPhoto) {
+        telegramBot.sendAnswerMessage(sendPhoto);
     }
 }

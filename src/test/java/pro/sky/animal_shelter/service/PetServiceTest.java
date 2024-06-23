@@ -213,7 +213,7 @@ class PetServiceTest {
                 .findIdFirstPet();
         user.setPetId(pets.get(0));
 
-        petService.changeNextPetView(update.getMessage().getChatId());
+        petService.changeNextPetView(update);
 
         ArgumentCaptor<pro.sky.animal_shelter.model.User> captor = ArgumentCaptor.forClass(pro.sky.animal_shelter.model.User.class);
         verify(userRepository).save(captor.capture());
@@ -237,7 +237,7 @@ class PetServiceTest {
                 .findNextPet(user.getPetId().getId());
         user.setPetId(pets.get(2));
 
-        petService.changeNextPetView(update.getMessage().getChatId());
+        petService.changeNextPetView(update);
 
         ArgumentCaptor<pro.sky.animal_shelter.model.User> captor = ArgumentCaptor.forClass(pro.sky.animal_shelter.model.User.class);
         verify(userRepository).save(captor.capture());
@@ -262,7 +262,7 @@ class PetServiceTest {
                 .findIdLastPet();
         user.setPetId(pets.get(2));
 
-        petService.changeNextPetView(update.getMessage().getChatId());
+        petService.changeNextPetView(update);
 
         ArgumentCaptor<pro.sky.animal_shelter.model.User> captor = ArgumentCaptor.forClass(pro.sky.animal_shelter.model.User.class);
         verify(userRepository).save(captor.capture());
@@ -287,7 +287,7 @@ class PetServiceTest {
                 .findIdLastPet();
         user.setPetId(pets.get(0));
 
-        petService.changeNextPetView(update.getMessage().getChatId());
+        petService.changeNextPetView(update);
 
         ArgumentCaptor<pro.sky.animal_shelter.model.User> captor = ArgumentCaptor.forClass(pro.sky.animal_shelter.model.User.class);
         verify(userRepository).save(captor.capture());
