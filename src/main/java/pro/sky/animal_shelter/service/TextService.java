@@ -356,16 +356,23 @@ public class TextService {
      * @return возвращает объект сообщения пользователю
      */
     private SendMessage adminStatusViewContactInformation(Update update){
-        if (isNumeric(update.getMessage().getText())) {
-            return messageUtils.generateSendMessage(update,contactInformationService.deleteContactInformationById(Long.parseLong(update.getMessage().getText())) + "\n" +
-                    "Ввели не id или не число.\nДля удаления обратной связи введите ее id, для перехода ко всем командам exit или нажмите /start");
-        } else if (update.getMessage().getText().equals("exit")) {
-            return messageUtils.generateSendButton(update.getMessage().getChatId(),
-                    "Главное меню администратора.");
+        long chatId;
+        if(update.hasCallbackQuery()){
+            chatId = update.getCallbackQuery().getFrom().getId();
         } else {
-            return messageUtils.generateSendButton(update.getMessage().getChatId(),
+            chatId = update.getMessage().getChatId();
+        }
+        if (isNumeric(update.getMessage().getText())) {
+            return messageUtils.generateSendMessage(chatId,contactInformationService.deleteContactInformationById(Long.parseLong(update.getMessage().getText())) + "\n" +
+                    "Ввели не id или не число.\nДля удаления обратной связи введите ее id, для перехода ко всем командам exit или нажмите /start");
+        }
+        if (update.getMessage().getText().equals("exit")) {
+            return messageUtils.generateSendButton(chatId,
+                    "Главное меню администратора.");
+        }
+            return messageUtils.generateSendButton(chatId,
                     "Ввели не id или не число.\n" +
                         "Для удаления обратной связи введите ее id, для перехода ко всем командам exit или нажмите /start");
-        }
+
     }
 }

@@ -59,10 +59,8 @@ public class ContactInformation {
 
     @Override
     public String toString() {
-        return "ContactInformation{" +
-                "id=" + id +
-                ", phone='" + phone + '\'' +
-                ", name='" + name + '\'' +
-                '}';
+        return "id= " + id +
+                ", Телефон= " + phone +
+                ", Имя= " + name + "\n";
     }
 }
