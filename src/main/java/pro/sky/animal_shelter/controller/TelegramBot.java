@@ -23,8 +23,7 @@ import pro.sky.animal_shelter.enums.BotCommandEnum;
 import pro.sky.animal_shelter.model.Call;
 import pro.sky.animal_shelter.model.Repositories.CallRepository;
 import pro.sky.animal_shelter.model.User;
-import pro.sky.animal_shelter.service.ReportService;
-import pro.sky.animal_shelter.service.UserStatusService;
+import pro.sky.animal_shelter.service.*;
 
 import static pro.sky.animal_shelter.enums.UserSatausEnum.*;
 
@@ -45,13 +44,19 @@ public class  TelegramBot extends TelegramLongPollingBot {
     private final CallRepository callRepository;
     private final UserStatusService userStatusService;
     private final ReportService reportService;
+    private final UrlService urlService;
+    private final PetService petService;
+    private final ButtonService buttonService;
     public TelegramBot(UpdateController updateController, AdminReportController adminReportController,
-                       CallRepository callRepository, UserStatusService userStatusService, ReportService reportService){
+                       CallRepository callRepository, UserStatusService userStatusService, ReportService reportService, UrlService urlService, PetService petService, ButtonService buttonService){
         this.updateController = updateController;
         this.adminReportController = adminReportController;
         this.callRepository = callRepository;
         this.userStatusService = userStatusService;
         this.reportService = reportService;
+        this.urlService = urlService;
+        this.petService = petService;
+        this.buttonService = buttonService;
         List<BotCommand> botCommandList = new ArrayList<>();
         BotCommandEnum[] botCommandEnums = BotCommandEnum.values();
         for (BotCommandEnum botCommandEnum : botCommandEnums) {
@@ -68,6 +73,9 @@ public class  TelegramBot extends TelegramLongPollingBot {
         updateController.registerBot(this);
         adminReportController.registerBot(this);
         reportService.registerBot(this);
+        urlService.registerBot(this);
+        petService.registerBot(this);
+        buttonService.registerBot(this);
     }
     @Override
     public String getBotUsername(){

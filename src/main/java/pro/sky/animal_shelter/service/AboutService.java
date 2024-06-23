@@ -25,7 +25,8 @@ public class AboutService {
         StringBuilder message = new StringBuilder();
         var about = aboutRepository.findAll();
         if(about.isEmpty()){
-            message.append("Описание пока отсутствует");
+            message.append("Описание пока отсутствует")
+                    .append("\n");
         } else {
             for (About value : about) {
                 message.append(value.getShelterName()).append("\n");

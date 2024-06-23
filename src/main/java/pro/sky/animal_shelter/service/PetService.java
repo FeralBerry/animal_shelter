@@ -2,11 +2,15 @@ package pro.sky.animal_shelter.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import pro.sky.animal_shelter.controller.TelegramBot;
 import pro.sky.animal_shelter.model.*;
 import pro.sky.animal_shelter.model.Repositories.PetRepository;
 import pro.sky.animal_shelter.model.Repositories.PetsImgRepository;
 import pro.sky.animal_shelter.model.Repositories.UserRepository;
+import pro.sky.animal_shelter.utils.MessageUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,13 +25,19 @@ public class PetService {
     private final PetRepository petRepository;
     private final PetsImgRepository petsImgRepository;
     private final UserRepository userRepository;
+    private final MessageUtils messageUtils;
+    private TelegramBot telegramBot;
+    public void registerBot(TelegramBot telegramBot){
+        this.telegramBot = telegramBot;
+    }
 
     public PetService(PetRepository petRepository,
                       PetsImgRepository petsImgRepository,
-                      UserRepository userRepository){
+                      UserRepository userRepository, MessageUtils messageUtils){
         this.petRepository = petRepository;
         this.petsImgRepository = petsImgRepository;
         this.userRepository = userRepository;
+        this.messageUtils = messageUtils;
     }
 
     private static final String PET_FORM = """
@@ -59,7 +69,24 @@ public class PetService {
      * @return возвращает объект животного
      */
     public Pet getPet(Update update){
-        User newUser = getUserById(update.getMessage().getChatId());
+        User newUser;
+        if(update.hasCallbackQuery()){
+            newUser = getUserById(update.getCallbackQuery().getFrom().getId());
+        } else {
+            newUser = getUserById(update.getMessage().getChatId());
+        }
+        if(newUser.getPetId() == null){
+            List<Pet> pets = petRepository.findAll();
+            if(pets.isEmpty()){
+                return null;
+            }
+            Pet pet = petRepository.findIdFirstPet();
+            if(pet != null){
+                return checkPet(pet.getId(),newUser);
+            } else {
+                return null;
+            }
+        }
         Pet lastViewPetId = newUser.getPetId();
         return checkPet(lastViewPetId.getId(),newUser);
     }
@@ -124,29 +151,47 @@ public class PetService {
         }
         return images;
     }
+    public List<String> getPetImagesByPet(Pet pet){
+        List<PetsImg> petImages = petsImgRepository.findPetsImgByPetId(pet.getId());
+        List<String> images = new ArrayList<>();
+        for (PetsImg petsImg : petImages){
+            images.add(petsImg.getFileId());
+        }
+        return images;
+    }
 
     /**
      * Меняет текущее значение просмотренного животного, если текущее последнее переставляет на первое
-     * @param chatId id пользователя просматривающего животных
      */
-    public void changeNextPetView(long chatId){
+    public void changeNextPetView(Update update){
+        long chatId = update.getCallbackQuery().getFrom().getId();
         User user = getUserById(chatId);
         Pet lastViewPetId = user.getPetId();
         Pet lastPetId = petRepository.findIdLastPet();
+        Pet viewPet;
         if(lastViewPetId.getId() < lastPetId.getId()){
-            user.setPetId(petRepository.findNextPet(lastViewPetId.getId()));
+            viewPet = petRepository.findNextPet(lastViewPetId.getId());
+            user.setPetId(viewPet);
             userRepository.save(user);
         } else {
-            user.setPetId(petRepository.findIdFirstPet());
+            viewPet = petRepository.findIdFirstPet();
+            user.setPetId(viewPet);
             userRepository.save(user);
+        }
+        if(getPetImages(update).size() > 1){
+            SendMediaGroup sendMediaGroups = messageUtils.sendMediaGroup(chatId, getPetImagesByPet(viewPet));
+            setView(sendMediaGroups);
+        } else {
+            SendPhoto sendPhoto = messageUtils.sendPhoto(chatId,getPetImagesByPet(viewPet).get(0));
+            setView(sendPhoto);
         }
     }
 
     /**
      * Меняет текущее значение просмотренного животного, если текущее первое переставляет на последнее
-     * @param chatId id пользователя просматривающего животных
      */
-    public void changePrevPetView(long chatId) {
+    public void changePrevPetView(Update update) {
+        long chatId = update.getCallbackQuery().getFrom().getId();
         User user = getUserById(chatId);
         Pet lastViewPetId = user.getPetId();
         Pet firstPetId = petRepository.findIdFirstPet();
@@ -156,6 +201,13 @@ public class PetService {
         } else {
             user.setPetId(petRepository.findIdLastPet());
             userRepository.save(user);
+        }
+        if(getPetImages(update).size() > 1){
+            SendMediaGroup sendMediaGroups = messageUtils.sendMediaGroup(chatId, getPetImages(update));
+            setView(sendMediaGroups);
+        } else {
+            SendPhoto sendPhoto = messageUtils.sendPhoto(chatId,getPetImages(update).get(0));
+            setView(sendPhoto);
         }
     }
     /**
@@ -192,7 +244,7 @@ public class PetService {
      * @return возвращает пользователя по id или ошибку если такого пользователя нет
      */
     public User getUserById(long chatId){
-        Optional<User> user = userRepository.findById(chatId);
+        Optional<User> user = userRepository.findByChatId(chatId);
         if(user.isPresent()){
             return user.get();
         } else {
@@ -211,5 +263,11 @@ public class PetService {
         } else {
             throw new NoSuchElementException("Животное с id=" + id + " не существует");
         }
+    }
+    public void setView(SendMediaGroup sendMediaGroup) {
+        telegramBot.sendAnswerMessage(sendMediaGroup);
+    }
+    public void setView(SendPhoto sendPhoto) {
+        telegramBot.sendAnswerMessage(sendPhoto);
     }
 }

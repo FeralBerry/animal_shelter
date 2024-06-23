@@ -39,7 +39,12 @@ public class CallService {
 
     public Long createCall(Update update){
         Random randomizer = new Random();
-        long chatId = update.getMessage().getChatId();
+        long chatId;
+        if (update.hasCallbackQuery()){
+            chatId = update.getCallbackQuery().getFrom().getId();
+        } else {
+            chatId = update.getMessage().getChatId();
+        }
         var adminsList = userRepository.findAllAdmin();
         if(adminsList.isEmpty()){
             userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());

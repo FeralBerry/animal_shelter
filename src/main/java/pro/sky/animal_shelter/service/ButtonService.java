@@ -1,8 +1,12 @@
 package pro.sky.animal_shelter.service;
 
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import pro.sky.animal_shelter.controller.CallController;
+import pro.sky.animal_shelter.controller.TelegramBot;
 import pro.sky.animal_shelter.model.Call;
 import pro.sky.animal_shelter.model.ContactInformation;
 import pro.sky.animal_shelter.model.Pet;
@@ -26,14 +30,20 @@ public class ButtonService {
     private final UserStatusService userStatusService;
     private final PetService petService;
     private final MessageUtils messageUtils;
+    private final CallService callService;
+    private TelegramBot telegramBot;
+    public void registerBot(TelegramBot telegramBot){
+        this.telegramBot = telegramBot;
+    }
 
-    public ButtonService(CallRepository callRepository, AdminService adminService, ContactInformationService contactInformationService, UserStatusService userStatusService, PetService petService, MessageUtils messageUtils) {
+    public ButtonService(CallRepository callRepository, AdminService adminService, ContactInformationService contactInformationService, UserStatusService userStatusService, PetService petService, MessageUtils messageUtils, CallService callService) {
         this.callRepository = callRepository;
         this.adminService = adminService;
         this.contactInformationService = contactInformationService;
         this.userStatusService = userStatusService;
         this.petService = petService;
         this.messageUtils = messageUtils;
+        this.callService = callService;
     }
 
     /**
@@ -57,15 +67,15 @@ public class ButtonService {
             if(contactInformationService.getAllContactInformation().isEmpty()){
                 newMessage.append("Пока никто не оставлял заявок на обратную связь.");
                 userStatusService.changeUserStatus(chatId,NO_STATUS.getStatus());
-                sendMessageList.add(messageUtils.generateSendMessage(update, newMessage.toString()));
-                sendMessageList.add(messageUtils.generateSendMessage(update, "Главное меню администратора."));
+                sendMessageList.add(messageUtils.generateSendMessage(chatId, newMessage.toString()));
             } else {
+                userStatusService.changeUserStatus(chatId,VIEW_CONTACT_INFORMATION.getStatus());
                 for (ContactInformation contactInformation : contactInformationService.getAllContactInformation()){
                     newMessage.append(contactInformation.toString())
                             .append("\n");
                 }
                 newMessage.append("Для удаления обратной связи введите ее id, для перехода ко всем командам exit или нажмите /start");
-                sendMessageList.add(messageUtils.generateSendMessage(update, newMessage.toString()));
+                sendMessageList.add(messageUtils.generateSendMessage(chatId, newMessage.toString()));
             }
         } else if (callBackData.equals(PET_ADD_COMMAND.getCommand())) {
             userStatusService.changeUserStatus(chatId,PET_ADD.getStatus());
@@ -127,14 +137,37 @@ public class ButtonService {
             // переключить статус пользователя
             userStatusService.changeUserStatus(chatId,"pet_report");
             String newMessage = petService.getPetForm();
-            sendMessageList.add(messageUtils.generateSendMessage(update, newMessage));
+            sendMessageList.add(messageUtils.generateSendMessage(chatId, newMessage));
             //messageUtils.generateEditMessage(update, newMessage.toString());
         } else if (callBackData.equals(CONTACT_INFORMATION_ADD.getCommand())) {
             // переключить статус пользователя
             userStatusService.changeUserStatus(chatId, GET_CONTACT_INFORMATION.getStatus());
             // присылает в каком виде надо отсылать контактную информацию
-            sendMessageList.add(messageUtils.generateSendMessage(update, contactInformationService.getContactInformation()));
-        } else if(callBackData.equals(PET_BUTTON_PREV.getCommand())) {
+            sendMessageList.add(messageUtils.generateSendMessage(chatId, contactInformationService.getContactInformation()));
+        } else if(callBackData.equals(VIEW_PETS.getCommand())){
+            Pet petView = petService.getPet(update);
+            sendMessage = messageUtils.generateSendButton(chatId,"");
+            if(petView == null){
+                sendMessage.setChatId(chatId);
+                sendMessage.setText("Питомцы все разобраны");
+                sendMessageList.add(sendMessage);
+            } else {
+                String description = petView.getDescription();
+                String petName = petView.getPetName();
+                userStatusService.changeUserStatus(update, VIEW_PET_LIST.getStatus());
+                if(petService.getPetImages(update).size() > 1){
+                    SendMediaGroup sendMediaGroups = messageUtils.sendMediaGroup(update.getMessage().getChatId(), petService.getPetImages(update));
+                    setView(sendMediaGroups);
+                } else {
+                    SendPhoto sendPhoto = messageUtils.sendPhoto(update.getMessage().getChatId(),petService.getPetImages(update).get(0));
+                    setView(sendPhoto);
+                }
+                sendMessage.setChatId(chatId);
+                sendMessage.setText(petName + "\n" + description);
+                sendMessageList.add(sendMessage);
+            }
+        }
+        else if(callBackData.equals(PET_BUTTON_PREV.getCommand())) {
             Pet petView = petService.getPet(update);
             String description = petView.getDescription();
             String petName = petView.getPetName();
@@ -146,10 +179,25 @@ public class ButtonService {
             Pet petView = petService.getPet(update);
             String description = petView.getDescription();
             String petName = petView.getPetName();
-            sendMessage = messageUtils.generateSendButton(chatId,"");
+            sendMessage = messageUtils.generateSendButton(chatId, "");
             sendMessage.setChatId(chatId);
             sendMessage.setText(petName + "\n" + description);
             sendMessageList.add(sendMessage);
+        }
+        else if (callBackData.equals(CALL_TO.getCommand())) {
+            System.out.println(callVolunteer(update)==0);
+            if(callVolunteer(update) == 0){
+                sendMessageList.add(messageUtils.generateSendMessage(chatId,
+                        "Пока что все волонтеры заняты"));
+            } else {
+                sendMessageList.add(messageUtils.generateSendMessage(chatId,
+                        "Пишите сообщения боту он их перенаправит первому освободившемуся волонтеру"));
+                sendMessage.setChatId(callVolunteer(update));
+                sendMessage.setText("Ожидаем сообщение от");
+                sendMessageList.add(sendMessage);
+                var sendButton = messageUtils.generateSendButton(chatId,"Закончить разговор");
+                sendMessageList.add(sendButton);
+            }
         } else if(callBackData.equals("close_call")){
             userStatusService.changeUserStatus(chatId, NO_STATUS.getStatus());
             sendMessage.setChatId(chatId);
@@ -162,5 +210,14 @@ public class ButtonService {
             sendMessageList.add(sendMessage);
         }
         return sendMessageList;
+    }
+    public Long callVolunteer(Update update){
+        return callService.createCall(update);
+    }
+    public void setView(SendMediaGroup sendMediaGroup) {
+        telegramBot.sendAnswerMessage(sendMediaGroup);
+    }
+    public void setView(SendPhoto sendPhoto) {
+        telegramBot.sendAnswerMessage(sendPhoto);
     }
 }
